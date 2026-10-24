@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "GIMCompress": {
+      "commandName": "Project",
+      "nativeDebugging": false
+    }
+  }
+}

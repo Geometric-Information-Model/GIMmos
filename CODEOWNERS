@@ -1,0 +1,4 @@
+# These are the main code owners of the GIM ecospace
+# PRs to long-lived branches requires the approval of at least one of these.
+# As more owners are added to a repo, we'll add their name here.
+* @MarcelKasteleijn @Anis-Messaoudi @Nadh977

@@ -1,0 +1,249 @@
+// opencode.local.template.jsonc — team-standard opencode permission ruleset
+// for the gim-tools harness wiring (plan 0004 / ADR 0007).
+//
+// HOW TO USE
+//   Copy this file to `opencode.local.json` (gitignored) on each machine and
+//   edit there. NEVER commit `opencode.local.json` — it is machine-local.
+//   Machine-specific entries (external_directory) stay local-only; each
+//   machine adds its own (see the external_directory section below).
+//
+// LEAN DENY POSTURE (user-locked)
+//   Message-carrying denies live in the plugin/hooks
+//   (.opencode/plugins/gim-permissions.js) — do NOT add them here.
+//   The plugin denies with a helpful replacement message: the five
+//   block-accepting cmdlets (ForEach-Object, Where-Object, Group-Object,
+//   Sort-Object, Select-Object), $( ) substitution, :: / reflection,
+//   execution escapes (Invoke-Expression / iex / Add-Type / Start-Process),
+//   destructive git variants (git add -A/-f/--all/--force, git branch -D/-d,
+//   git stash drop/apply/clear), force-push variants, git -C, secret-file
+//   paths, and dotnet execution verbs. The `"*": "ask"` default remains the
+//   catch-all when the hook misses.
+//
+// pwsh RULE (user-locked — never break this)
+//   NEVER add pwsh* / powershell* allow entries. pwsh is the universal
+//   interpreter; allowlisting it would grant arbitrary execution. The harness
+//   shell already runs pwsh, so scripts run in-shell (& <path> / pipeline /
+//   import) — only the opencode plugin (JS, non-agent) spawns pwsh -File.
+//
+// node RULE (user-locked this plan)
+//   node is NOT allowlisted — plugin/agent tests are human-gated. Do not add
+//   node* allow entries.
+{
+  "$schema": "https://opencode.ai/config.json",
+  "default_agent": "gim-orchestrator",
+  "subagent_depth": 3,
+  "shell": "pwsh.exe",
+  "instructions": [
+    ".opencode/harness-map.md"
+  ],
+  "permission": {
+    "bash": {
+      // Catch-all default. Ask on anything not explicitly allowlisted.
+      // (The plugin denies message-carrying rules before this is reached.)
+      "*": "ask",
+
+      // ---------- GENERAL COMMANDS ----------
+      "ls*": "allow",
+      "dir*": "allow",
+      "pwd*": "allow",
+      "cd*": "allow",
+      "cat*": "allow",
+      "head*": "allow",
+      "tail*": "allow",
+      "dirname*": "allow",
+      "echo*": "allow",
+      "find*": "allow",
+      "fc*": "allow",
+      "tree*": "allow",
+      "findstr*": "allow",
+      "grep*": "allow",
+      "rg*": "allow",
+
+      // ---------- POWERSHELL COMMANDS ----------
+      // The five block-accepting cmdlets (ForEach-Object, Where-Object,
+      // Group-Object, Sort-Object, Select-Object) are NOT allowlisted — the
+      // plugin denies them with the replacement message (gim-report --prefix,
+      // gim-where --<predicate>, gim-count --by, gim-report --sort,
+      // gim-head / gim-json --path). If the hook misses, they fall back to
+      // the default ask.
+      "ConvertFrom-Json*": "allow",
+      "Format-Hex*": "allow",
+      "Format-List*": "allow",
+      "Format-Table*": "allow",
+      "Get-ChildItem*": "allow",
+      "Get-Command*": "allow",
+      "Get-Content*": "allow",
+      "Get-Help*": "allow",
+      "Get-Item*": "allow",
+      "Get-Location*": "allow",
+      "Get-Module*": "allow",
+      "Get-Process*": "allow",
+      "Import-PowerShellDataFile*": "allow",
+      "Join-Path*": "allow",
+      "Measure-Object*": "allow",
+      "Out-Null*": "allow",
+      "Resolve-Path*": "allow",
+      "Select-String*": "allow",
+      "Split-Path*": "allow",
+      "Start-Sleep*": "allow",
+      "Test-NetConnection*": "allow",
+      "Test-Path*": "allow",
+      "Wait-Process*": "allow",
+      "Write-Host*": "allow",
+      "Write-Output*": "allow",
+      "where.exe*": "allow",
+
+      // gim-tools import lines (both slash forms + name form) — loads all 25
+      // gim-* verbs (nine groups). With the module at scripts/GIMTools/GIMTools.psd1 and
+      // scripts/ in the User PSModulePath (setup.ps1, plan 0004 S1), the
+      // import line is no longer required per shell — auto-load brings the
+      // verbs in; the allow entries below keep explicit imports working.
+      "Import-Module -Force ./.agents/skills/gim-tools/scripts/GIMTools/GIMTools.psd1 -DisableNameChecking": "allow",
+      "Import-Module -Force .\\.agents\\skills\\gim-tools\\scripts\\GIMTools\\GIMTools.psd1 -DisableNameChecking": "allow",
+      "Import-Module GIMTools*": "allow",
+
+      // ---------- PESTER TEST TIER (suite-only) ----------
+      // Wildcard forms required — exact-word rules never fire on name tokens.
+      "Import-Module Pester*": "allow",
+      "Invoke-Pester*": "allow",
+      "Should*": "allow",
+      "InModuleScope*": "allow",
+
+      // ---------- GIT COMMANDS ----------
+      // ".gitignore" is the sacrificial first-file token for git -- pathspec
+      // commands (e.g. `git diff -- .gitignore <files>`). The plugin denies
+      // git -- pathspec commands whose first file is not .gitignore.
+      // Destructive variants (git add -A/-f/--all/--force, git branch -D/-d,
+      // git stash drop/apply/clear) and force-push variants are plugin-denied
+      // with messages — no message-carrying config denies here (lean deny
+      // posture); the scoped `git add` backstops below are the fail-open
+      // exception.
+      // Plain `git push` is NOT denied (version-controller pushes regularly)
+      // and NOT allowlisted — it falls through to the default ask.
+      ".gitignore*": "allow",
+      "git add*": "allow",
+      // Scoped destructive-form backstops (fail-open safety net when the
+      // plugin can't load); message-carrying denies still live in the
+      // plugin/hooks. Last-match-wins: these MUST stay after `git add*`.
+      "git add -A*": "deny",
+      "git add -f*": "deny",
+      "git add --all*": "deny",
+      "git add --force*": "deny",
+      "git status*": "allow",
+      "git diff*": "allow",
+      "git show*": "allow",
+      "git log*": "allow",
+      "git ls-files*": "allow",
+      "git blame*": "allow",
+      "git branch": "allow",
+      "git branch -l*": "allow",
+      "git branch --show-current*": "allow",
+      "git fetch*": "allow",
+      "git rev-parse*": "allow",
+      "git check-ignore*": "allow",
+      "git grep*": "allow",
+      "git remote -v*": "allow",
+      "git version*": "allow",
+      "git merge-tree*": "allow",
+      "git branch --list*": "allow",
+      "git config --get*": "allow",
+      "git check-attr*": "allow",
+      "git stash push*": "allow",
+      "git stash pop*": "allow",
+      "git stash list*": "allow",
+      "git ls-remote*": "allow",
+      "git remote get-url*": "allow",
+
+      // ---------- GITHUB CLI COMMANDS ----------
+      "gh auth status*": "allow",
+      "gh pr list*": "allow",
+      "gh pr view*": "allow",
+      "gh pr diff*": "allow",
+      "gh issue view*": "allow",
+      "gh --version*": "allow",
+
+      // ---------- DOTNET CLI COMMANDS (read + build/test only) ----------
+      // Raw dotnet execution verbs (run, exec, <path>.dll, nuget push, ...)
+      // are plugin-denied with the "use gim-run" message — do not add allows.
+      "dotnet test*": "allow",
+      "dotnet build*": "allow",
+      "dotnet --version*": "allow",
+      "dotnet --list-sdks*": "allow",
+      "dotnet --list-runtimes*": "allow",
+
+      // ---------- JIRA CLI COMMANDS (acli) ----------
+      "acli jira workitem view*": "allow",
+      "acli jira workitem transition*": "allow",
+      "acli jira workitem create*": "allow",
+      "acli jira workitem comment --help*": "allow",
+      "acli jira workitem comment create*": "allow",
+      "acli jira workitem comment list*": "allow",
+      "acli jira --help*": "allow",
+      "acli --help*": "allow",
+      "acli --version*": "allow",
+      "acli jira board view*": "allow",
+      "acli jira board --help*": "allow",
+      "acli jira board search*": "allow",
+      "acli jira project --help*": "allow",
+      "acli jira board get*": "allow",
+      "acli jira project view*": "allow",
+      "acli jira project list*": "allow",
+
+      // ---------- gim-* COMMANDS — global allowlist ----------
+      // 18 global verbs: read + state + write + execution tiers; all allowed per
+      // ADR 0007. Write verbs support --dry-run; gim-run scrubs credential env vars
+      // (ADR 0006). The other seven fleet verbs (ADR 0008) are role-scoped, never
+      // global: gim-preflight/gim-pr/gim-wrapup-gather/gim-wrapup-respond in the
+      // version-controller frontmatter, and gim-jira-search/gim-jira-create/
+      // gim-jira-transition in the tracker frontmatter. Cursor's Auto-run list is
+      // global, so Cursor may ask once for those verbs.
+      "gim-where*": "allow",
+      "gim-list*": "allow",
+      "gim-report*": "allow",
+      "gim-grep*": "allow",
+      "gim-json*": "allow",
+      "gim-diff*": "allow",
+      "gim-head*": "allow",
+      "gim-inspect*": "allow",
+      "gim-count*": "allow",
+      "gim-asm*": "allow",
+      "gim-set*": "allow",
+      "gim-get*": "allow",
+      "gim-fix*": "allow",
+      "gim-write*": "allow",
+      "gim-apply*": "allow",
+      "gim-run*": "allow",
+      "gim-probe*": "allow",
+      "gim-verbs*": "allow"
+    },
+    "external_directory": {
+      // external_directory stays LOCAL-ONLY — each machine adds its own
+      // entries. NEVER commit machine-specific paths.
+      // Examples (uncomment / add per machine):
+      //   "D:/Work/GIM/<sibling-repo>/**": "allow",
+      //   "C:/Program Files/PowerShell/Modules/Pester/**": "allow",
+      //   "C:/Users/<you>/Documents/PowerShell/Modules/Pester/**": "allow"
+      // (Pester user-scope install per guide 0001:
+      //  Install-Module Pester -Scope CurrentUser)
+    }
+  },
+  "references": {
+    // Committed config carries ONLY the public siblings (GIMmanager,
+    // CoreWebApi, GIMocctWrapper) — mirrors the committed opencode.json.
+    // Closed/private sibling repos live machine-local ONLY (see the
+    // gitignored GIMmos-private.code-workspace) — add them in your
+    // local opencode.local.json, never in this template.
+    "GIMmanager": {
+      "path": "../GIMmanager",
+      "description": "GIMmanager's local repository"
+    },
+    "CoreWebApi": {
+      "path": "../CoreWebApi",
+      "description": "CoreWebApi's local repository"
+    },
+    "GIMocctWrapper": {
+      "path": "../GIMocctWrapper",
+      "description": "GIMocctWrapper's local repository"
+    }
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionStart": [
+      {
+        "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File .cursor/hooks/gim-preload.ps1"
+      }
+    ],
+    "preToolUse": [
+      {
+        "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File .cursor/hooks/gim-permissions.ps1"
+      },
+      {
+        "matcher": "Task",
+        "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File .cursor/hooks/gim-preload.ps1"
+      }
+    ],
+    "beforeShellExecution": [
+      {
+        "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File .cursor/hooks/gim-permissions.ps1"
+      }
+    ]
+  }
+}

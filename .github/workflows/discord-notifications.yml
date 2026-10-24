@@ -1,0 +1,72 @@
+name: Discord Dev Sync
+on:
+  pull_request:
+    types: [opened, closed, review_requested]
+  pull_request_review:
+    types: [submitted]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  discord-notify:
+    runs-on: ubuntu-latest
+    env:
+      DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+    steps:
+      - name: Map GitHub User to Discord ID
+        id: mapper
+        run: |
+          RAW_USER="${{ github.actor }}"
+          CLEAN_USER=$(echo "${RAW_USER//[-.]/_}" | tr '[:lower:]' '[:upper:]')
+          VAR_NAME="GH_USER_$CLEAN_USER"
+          
+          # Use the environment variable for the lookup
+          DISCORD_TAG="${{ vars[format('GH_USER_{0}', env.CLEAN_USER)] }}"
+          
+          if [ -z "$DISCORD_TAG" ]; then
+            DISCORD_TAG="@$RAW_USER"
+          fi
+          echo "mapped_user=$DISCORD_TAG" >> $GITHUB_OUTPUT
+        env:
+          CLEAN_USER: $(echo "${{ github.actor }}" | sed 's/[-.]/_/g' | tr '[:lower:]' '[:upper:]')
+
+      # Added 'if' so this only runs on actual NEW PRs
+      - name: Send PR Notification
+        if: github.event.action == 'opened' && env.DISCORD_WEBHOOK != ''
+        uses: tsickert/discord-webhook@v7.0.0
+        with:
+          webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          content: "🚀 **<@&1474843550045700216> New PR #${{ github.event.pull_request.number }} opened in ${{ github.event.repository.name }} by ${{ steps.mapper.outputs.mapped_user }}**"
+          username: "GitHub Bot"
+          embed-title: "${{ github.event.pull_request.title }}"
+          embed-url: "${{ github.event.pull_request.html_url }}"
+          embed-description: |
+            **Author:** ${{ github.actor }}
+            **Branch:** `${{ github.event.pull_request.head.ref }}` -> `${{ github.event.pull_request.base.ref }}`
+            **Repository:** ${{ github.event.repository.name }}
+          embed-color: 3447003 # Blue for New
+
+      - name: Notify Approval
+        if: github.event.review.state == 'approved' && env.DISCORD_WEBHOOK != ''
+        uses: tsickert/discord-webhook@v7.0.0
+        with:
+          webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          # Mentioning the PR author that they got approved!
+          content: "✅ **PR #${{ github.event.pull_request.number }} (${{ github.event.pull_request.title }}) in ${{ github.event.repository.name }} Approved!** Ready for merge 🚦: ${{ github.event.pull_request.html_url }}"
+
+      - name: Notify Merge
+        if: github.event.pull_request.merged == true && env.DISCORD_WEBHOOK != ''
+        uses: tsickert/discord-webhook@v7.0.0
+        with:
+          webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          content: "🟣 **<@&1474843550045700216> PR #${{ github.event.pull_request.number }} (${{ github.event.pull_request.title }}) has been MERGED to ${{ github.event.pull_request.base.ref }} in ${{ github.event.repository.name }}** 🏁"
+
+      # Optional: Notify if closed WITHOUT merging
+      - name: Notify Closed
+        if: github.event.action == 'closed' && github.event.pull_request.merged == false && env.DISCORD_WEBHOOK != ''
+        uses: tsickert/discord-webhook@v7.0.0
+        with:
+          webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          content: "❌ PR #${{ github.event.pull_request.number }} (${{ github.event.pull_request.title }}) was Closed without merging (Repository **${{ github.event.repository.name }}**)."

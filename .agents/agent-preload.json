@@ -1,0 +1,39 @@
+{
+  "$comment": "Shared per-agent context preload for both harnesses (OpenCode: .opencode/plugins/gim-preload.js every turn; Cursor: .cursor/hooks/gim-preload.ps1 at session start and Task spawn), per docs/adr/agents/0009-AGENTS-context-preload.md. Each agent has two independent sections. 'skills' is a list of skill names, resolved to SKILL.md under the repo-local roots .agents/skills, then .opencode/skills and .claude/skills. 'files' is a list of arbitrary file paths (prefs, checklists, whatever), relative to the project root or absolute. Skills are appended first, then files. The material is attached to the agent's context: every turn in OpenCode, at session start or Task spawn in Cursor. Changes take effect on the next turn; only the .js (OpenCode) needs a restart.",
+  "enabled": true,
+  "header": "Reference material, preloaded. Attached to this agent's context.",
+  "agents": {
+    "gim-orchestrator": {
+      "skills": ["caveman", "agentic-planning", "grill-with-docs", "review-with-critic", "gim-tools"],
+      "files": [".agents/agent-prefs.md"]
+    },
+    "gim-explorer": {
+      "skills": ["caveman", "workspace-code-search", "gim-tools"],
+      "files": [".agents/agent-prefs.md"]
+    },
+    "gim-builder": {
+      "skills": ["caveman", "agentic-planning", "fileaccess-routing", "format-adapter-contract", "gim-tools"],
+      "files": [".agents/agent-prefs.md"]
+    },
+    "gim-version-controller": {
+      "skills": ["caveman", "git-branching-workflow", "github-cli-workflow", "gh-stack", "gim-tools"],
+      "files": [".agents/agent-prefs.md"]
+    },
+    "gim-critic": {
+      "skills": ["caveman", "gim-tools"],
+      "files": [".agents/agent-prefs.md"]
+    },
+    "gim-tracker": {
+      "skills": ["caveman", "atlassian-jira-cli", "github-cli-workflow", "gim-tools"],
+      "files": [".agents/agent-prefs.md"]
+    },
+    "gim-debugger": {
+      "skills": ["caveman", "diagnosing-bugs", "gim-tools"],
+      "files": [".agents/agent-prefs.md"]
+    },
+    "gim-tester": {
+      "skills": ["caveman", "gim-tools"],
+      "files": [".agents/agent-prefs.md"]
+    }
+  }
+}

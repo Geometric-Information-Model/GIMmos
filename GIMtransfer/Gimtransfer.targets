@@ -1,0 +1,19 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Reference Include="GIMocctCLI">
+      <HintPath>$(MSBuildThisFileDirectory)..\native\GIMocctCLI.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+	
+	<Reference Include="GIMocctWrapper">
+      <HintPath>$(MSBuildThisFileDirectory)..\native\GIMocctWrapper.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+
+    <Content Include="$(MSBuildThisFileDirectory)..\native\*.dll">
+      <Link>%(FileName)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Visible>false</Visible>
+    </Content>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,144 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.9.4" />
+    <PackageReference Include="NUnit" Version="3.13.1" />
+    <PackageReference Include="NUnit3TestAdapter" Version="3.17.0" />
+    <PackageReference Include="coverlet.collector" Version="3.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\GIMCompress\GIMCompress.csproj" />
+    <ProjectReference Include="..\GIMtransfer\GIMtransfer.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="CadExA3DSNet">
+      <HintPath>..\CadexLib\CadExA3DSNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExACISNet">
+      <HintPath>..\CadexLib\CadExACISNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExAdvGeomNet">
+      <HintPath>..\CadexLib\CadExAdvGeomNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExBRepNet">
+      <HintPath>..\CadexLib\CadExBRepNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExCATNet">
+      <HintPath>..\CadexLib\CadExCATNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExColladaNet">
+      <HintPath>..\CadexLib\CadExColladaNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExCoreNet">
+      <HintPath>..\CadexLib\CadExCoreNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExCreoNet">
+      <HintPath>..\CadexLib\CadExCreoNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExDS3DXMLNet">
+      <HintPath>..\CadexLib\CadExDS3DXMLNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExDWGNet">
+      <HintPath>..\CadexLib\CadExDWGNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExDXFNet">
+      <HintPath>..\CadexLib\CadExDXFNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExFBXNet">
+      <HintPath>..\CadexLib\CadExFBXNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExGLTFNet">
+      <HintPath>..\CadexLib\CadExGLTFNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExIFCNet">
+      <HintPath>..\CadexLib\CadExIFCNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExIGESNet">
+      <HintPath>..\CadexLib\CadExIGESNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExINVNet">
+      <HintPath>..\CadexLib\CadExINVNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExJTNet">
+      <HintPath>..\CadexLib\CadExJTNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExMeshNet">
+      <HintPath>..\CadexLib\CadExMeshNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExNXNet">
+      <HintPath>..\CadexLib\CadExNXNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExOBJNet">
+      <HintPath>..\CadexLib\CadExOBJNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExParaNet">
+      <HintPath>..\CadexLib\CadExParaNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExPLYNet">
+      <HintPath>..\CadexLib\CadExPLYNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExPRCNet">
+      <HintPath>..\CadexLib\CadExPRCNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExRhinoNet">
+      <HintPath>..\CadexLib\CadExRhinoNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExSLDENet">
+      <HintPath>..\CadexLib\CadExSLDENet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExSLDNet">
+      <HintPath>..\CadexLib\CadExSLDNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExSTEPNet">
+      <HintPath>..\CadexLib\CadExSTEPNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExSTLNet">
+      <HintPath>..\CadexLib\CadExSTLNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExU3DNet">
+      <HintPath>..\CadexLib\CadExU3DNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExUnity">
+      <HintPath>..\CadexLib\CadExUnity.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExUSDNet">
+      <HintPath>..\CadexLib\CadExUSDNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExViewD3DNet">
+      <HintPath>..\CadexLib\CadExViewD3DNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExViewNet">
+      <HintPath>..\CadexLib\CadExViewNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExViewOpenGlNet">
+      <HintPath>..\CadexLib\CadExViewOpenGlNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExViewWinForms">
+      <HintPath>..\CadexLib\CadExViewWinForms.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExViewWPF">
+      <HintPath>..\CadexLib\CadExViewWPF.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExVRMLNet">
+      <HintPath>..\CadexLib\CadExVRMLNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExX3DNet">
+      <HintPath>..\CadexLib\CadExX3DNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExX3DPDFNet">
+      <HintPath>..\CadexLib\CadExX3DPDFNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExX3MFNet">
+      <HintPath>..\CadexLib\CadExX3MFNet.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>

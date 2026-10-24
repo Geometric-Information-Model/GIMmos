@@ -1,0 +1,17 @@
+{
+  "repoRoot": ".",
+  "destinationRoot": "%UserProfile%\\.config\\opencode",
+  "sourceFolders": [
+    {
+      "source": ".opencode\\agents",
+      "destination": "agents"
+    },
+    {
+      "source": ".agents\\skills",
+      "destination": "skills"
+    }
+  ],
+  "denylist": [
+    ".agents\\agent-prefs.md"
+  ]
+}

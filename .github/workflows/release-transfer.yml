@@ -1,0 +1,81 @@
+name: Publish GIMtransfer to nuget.org
+
+# Packs GIMtransfer (OCCT natives in native/).
+# No sibling GIMzip on the runner → csproj Exists is false → nuget.org
+# GimBin/GimCrypt (the obfuscated packages). Auth is Trusted Publishing (OIDC).
+# Repo variables: NUGET_USER, NUGET_PUBLISH_ENABLED=true to arm.
+#
+# nuget.org policy: workflow file release-transfer.yml, glob GIMtransfer.
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  release-transfer:
+    if: ${{ vars.NUGET_PUBLISH_ENABLED == 'true' }}
+    runs-on: windows-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Version from tag
+        id: ver
+        shell: pwsh
+        run: |
+          $v = "${{ github.ref_name }}".TrimStart('v')
+          echo "version=$v" >> $env:GITHUB_OUTPUT
+
+      - name: Pack GIMtransfer
+        shell: pwsh
+        run: |
+          dotnet pack "GIMtransfer\GIMtransfer.csproj" `
+            -c Release `
+            -p:Platform=x64 `
+            -p:PackageVersion=${{ steps.ver.outputs.version }} `
+            -p:IncludeSymbols=false `
+            -o ./dist
+
+      - name: Verify native payload
+        shell: pwsh
+        run: |
+          $nupkg = Get-ChildItem ./dist -Filter *transfer*.nupkg | Select-Object -First 1
+          if (-not $nupkg) { throw "GIMtransfer nupkg missing from ./dist" }
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $zip = [System.IO.Compression.ZipFile]::OpenRead($nupkg.FullName)
+          try {
+            $native = @($zip.Entries | Where-Object { $_.FullName -replace '\\','/' -like 'native/*.dll' })
+            $hasTargets = $zip.Entries | Where-Object { $_.FullName -replace '\\','/' -like 'build/*.targets' }
+            $hasBin = $zip.Entries | Where-Object { $_.FullName -replace '\\','/' -like 'lib/*/GIMtransfer.dll' }
+            Write-Host "native DLL count: $($native.Count)"
+            if ($native.Count -lt 27) { throw "Expected Rel OCCT native payload (>=27 DLLs), got $($native.Count)" }
+            if (-not $hasTargets) { throw "build/GIMtransfer.targets missing from nupkg" }
+            if (-not $hasBin) { throw "lib/.../GIMtransfer.dll missing from nupkg" }
+          } finally {
+            $zip.Dispose()
+          }
+
+      - name: NuGet login (OIDC)
+        id: login
+        uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841 # v1.2.0
+        with:
+          user: ${{ vars.NUGET_USER }}
+
+      - name: Push
+        shell: pwsh
+        run: |
+          Get-ChildItem ./dist -Filter *.nupkg | ForEach-Object {
+            dotnet nuget push $_.FullName `
+              --source https://api.nuget.org/v3/index.json `
+              --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" `
+              --skip-duplicate
+          }

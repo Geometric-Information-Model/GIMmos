@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Handcrafted mini IMKL 2.0 (KLIC) delivery used by KlicImklReaderTests.
+  Deliberately rich: two owners x two themes, LineString + Curve utility links
+  (including a multi-segment Curve), a dig-request polygon, nil/sentinel/9999 dates,
+  nil and real widths plus width-looking false positives, all three CRS spellings,
+  codelist variants (paired and self-closing), mixed dashed/dotted peer-id styles,
+  one owner block and one feature serialized on a single line, an inline (redundant)
+  namespace declaration mid-file, and several support features that must be ignored.
+-->
+<imkl:GebiedsinformatieLevering
+    xmlns:imkl="http://www.imkl.nl/2.0"
+    xmlns:gml="http://www.opengis.net/gml/3.2"
+    xmlns:us-net-common="http://www.kadaster.nl/us-net-common/2.0"
+    xmlns:net="http://www.kadaster.nl/net/2.0"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.imkl.nl/2.0 http://www.kadaster.nl/schemas/imkl-wibon-2.0.xsd"
+    gml:id="nl.imkl-KL1040.levering.26O0074042">
+
+  <gml:boundedBy>
+    <gml:Envelope srsName="urn:ogc:def:crs:EPSG::28992">
+      <gml:lowerCorner>150000 450000</gml:lowerCorner>
+      <gml:upperCorner>151000 451000</gml:upperCorner>
+    </gml:Envelope>
+  </gml:boundedBy>
+
+  <imkl:GebiedsinformatieAanvraag gml:id="nl.imkl-KL1040.aanvraag.1">
+    <imkl:woonplaatsNaam>Arnhem</imkl:woonplaatsNaam>
+    <imkl:straatnaam>Kerkstraat</imkl:straatnaam>
+  </imkl:GebiedsinformatieAanvraag>
+
+  <imkl:klicMeldnummer>26O0074042</imkl:klicMeldnummer>
+  <imkl:leveringsvolgnummer>2</imkl:leveringsvolgnummer>
+
+  <imkl:Beheerders>
+    <imkl:Beheerder>
+      <imkl:bronhoudercode>KL1040</imkl:bronhoudercode>
+      <imkl:naam>Liander</imkl:naam>
+    </imkl:Beheerder>
+    <imkl:Belanghebbende gml:id="nl.imkl-KL1040.belanghebbende.1">
+      <imkl:naam>Deze naam mag niet winnen</imkl:naam>
+    </imkl:Belanghebbende>
+    <imkl:Beheerder><imkl:bronhoudercode>GM0202</imkl:bronhoudercode><imkl:naam>Gemeente Arnhem</imkl:naam></imkl:Beheerder>
+  </imkl:Beheerders>
+
+  <imkl:Netwerken>
+    <imkl:Utiliteitsnet gml:id="nl.imkl-KL1040.net.middenspanning">
+      <us-net-common:utilityNetworkType codeSpace="http://www.kadaster.nl/codes/utilityNetworkType">http://www.kadaster.nl/codes/utilityNetworkType/elektriciteit</us-net-common:utilityNetworkType>
+      <imkl:thema>http://www.kadaster.nl/codes/thema/middenspanning</imkl:thema>
+    </imkl:Utiliteitsnet>
+    <imkl:Utiliteitsnet gml:id="nl.imkl-GM0202.net.riool">
+      <us-net-common:utilityNetworkType xlink:href="http://www.kadaster.nl/codes/utilityNetworkType/riolering"/>
+      <imkl:thema xlink:href="http://www.kadaster.nl/codes/thema/riool"/>
+    </imkl:Utiliteitsnet>
+    <!-- Dotted peer-id style: must canonicalize to nl.imkl-KL1128.net.dotted. -->
+    <imkl:Utiliteitsnet gml:id="nl.imkl.KL1128.net.dotted">
+      <us-net-common:utilityNetworkType xlink:href="http://www.kadaster.nl/codes/utilityNetworkType/elektriciteit"/>
+      <imkl:thema xlink:href="http://www.kadaster.nl/codes/thema/laagspanning"/>
+    </imkl:Utiliteitsnet>
+  </imkl:Netwerken>
+
+  <imkl:SelectionArea>
+    <imkl:Orientatiepolygoon gml:id="nl.imkl-KL1040.orientatie.1">
+      <imkl:geometrie>
+        <gml:Polygon srsName="EPSG:28992">
+          <gml:exterior>
+            <gml:LinearRing>
+              <gml:posList>150000 450000 151000 450000 151000 451000 150000 451000 150000 450000</gml:posList>
+            </gml:LinearRing>
+          </gml:exterior>
+        </gml:Polygon>
+      </imkl:geometrie>
+    </imkl:Orientatiepolygoon>
+  </imkl:SelectionArea>
+
+  <imkl:Maatvoering gml:id="nl.imkl-KL1040.maatvoering.1">
+    <imkl:geometrie>
+      <gml:LineString><gml:posList>1 1 2 2</gml:posList></gml:LineString>
+    </imkl:geometrie>
+  </imkl:Maatvoering>
+  <imkl:Annotatie gml:id="nl.imkl-KL1040.annotatie.1">
+    <imkl:tekst>hier geen leiding</imkl:tekst>
+  </imkl:Annotatie>
+  <imkl:Kast gml:id="nl.imkl-KL1040.kast.1"/>
+  <imkl:ExtraGeometrie gml:id="nl.imkl-KL1040.extra.1">
+    <gml:Point><gml:pos>5 5</gml:pos></gml:Point>
+  </imkl:ExtraGeometrie>
+  <imkl:DiepteNAP gml:id="nl.imkl-KL1040.diepte.1"/>
+  <imkl:Bijlage gml:id="nl.imkl-KL1040.bijlage.1"/>
+  <imkl:AanduidingEisVoorzorgsmaatregel gml:id="nl.imkl-KL1040.eis.1"/>
+
+  <!-- Link BEFORE its theme feature. -->
+  <us-net-common:UtilityLink gml:id="nl.imkl-KL1040.link.1">
+    <gml:LineString srsName="EPSG:28992">
+      <gml:posList>150010.5 450010.25 150020 450020 150030 450030</gml:posList>
+    </gml:LineString>
+  </us-net-common:UtilityLink>
+
+  <imkl:Elektriciteitskabel gml:id="nl.imkl-KL1040.kabel.12406439" xmlns:us-net-common="http://www.kadaster.nl/us-net-common/2.0"><net:link xlink:href="#nl.imkl-KL1040.link.1"/><net:inNetwork xlink:href="#nl.imkl-KL1040.net.middenspanning"/><imkl:validFrom>2005-03-01</imkl:validFrom><imkl:validTo xsi:nil="true"/><us-net-common:ductWidth>110</us-net-common:ductWidth><imkl:currentStatus>http://www.kadaster.nl/codes/status/inBedrijf</imkl:currentStatus><imkl:verticalPosition>http://www.kadaster.nl/codes/verticalPosition/ondergronds</imkl:verticalPosition><us-net-common:widthUnit>mm</us-net-common:widthUnit><us-net-common:widthUom>mm</us-net-common:widthUom><us-net-common:widthAttributeRef>ur</us-net-common:widthAttributeRef></imkl:Elektriciteitskabel>
+
+  <!-- Theme feature BEFORE its (Curve) link; sentinel dates. -->
+  <imkl:Waterleiding gml:id="nl.imkl-KL1040.water.777">
+    <net:link xlink:href="#nl.imkl-KL1040.link.curve.1"/>
+    <net:inNetwork xlink:href="#nl.imkl-KL1040.net.middenspanning"/>
+    <imkl:validFrom>1968-01-01</imkl:validFrom>
+    <imkl:validTo>1900-01-01</imkl:validTo>
+    <us-net-common:buisdiameter>250</us-net-common:buisdiameter>
+  </imkl:Waterleiding>
+
+  <us-net-common:UtilityLink gml:id="nl.imkl-KL1040.link.curve.1">
+    <gml:Curve srsName="epsg:28992">
+      <gml:segments>
+        <gml:LineStringSegment>
+          <gml:posList>150100 450100  150110 450110</gml:posList>
+        </gml:LineStringSegment>
+      </gml:segments>
+    </gml:Curve>
+  </us-net-common:UtilityLink>
+
+  <!-- Owner GM0202, network 1: explicit 9999 validTo, nil width, bare-Z date. -->
+  <us-net-common:UtilityLink gml:id="nl.imkl-GM0202.link.2">
+    <gml:LineString srsName="EPSG:28992">
+      <gml:posList>150200 450200 150210 450210</gml:posList>
+    </gml:LineString>
+  </us-net-common:UtilityLink>
+
+  <imkl:Rioolleiding gml:id="nl.imkl-GM0202.riool.555">
+    <net:link xlink:href="#nl.imkl-GM0202.link.2"/>
+    <net:inNetwork xlink:href="#nl.imkl-GM0202.net.riool"/>
+    <imkl:validFrom>2010-05-05Z</imkl:validFrom>
+    <imkl:validTo>9999-12-31</imkl:validTo>
+  </imkl:Rioolleiding>
+
+  <!-- 7-digit fractional timestamp with Z. -->
+  <us-net-common:UtilityLink gml:id="nl.imkl-GM0202.link.3">
+    <gml:LineString srsName="EPSG:28992">
+      <gml:posList>150300 450300 150310 450310 150320 450320</gml:posList>
+    </gml:LineString>
+  </us-net-common:UtilityLink>
+
+  <imkl:Mantelbuis gml:id="nl.imkl-GM0202.mantel.888">
+    <net:link xlink:href="#nl.imkl-GM0202.link.3"/>
+    <net:inNetwork xlink:href="#nl.imkl-GM0202.net.riool"/>
+    <imkl:validFrom>2011-06-06T12:30:00.1234567Z</imkl:validFrom>
+  </imkl:Mantelbuis>
+
+  <!-- Multi-segment Curve: two LineStringSegments must accumulate into one ordered line.
+       The link id is dashed; the feature references it with a dotted href. -->
+  <us-net-common:UtilityLink gml:id="nl.imkl-KL1040.link.curve.2">
+    <gml:Curve srsName="EPSG:28992">
+      <gml:segments>
+        <gml:LineStringSegment>
+          <gml:posList>150400 450400 150410 450410</gml:posList>
+        </gml:LineStringSegment>
+        <gml:LineStringSegment>
+          <gml:posList>150420 450420 150430 450430</gml:posList>
+        </gml:LineStringSegment>
+      </gml:segments>
+    </gml:Curve>
+  </us-net-common:UtilityLink>
+
+  <imkl:Duct gml:id="nl.imkl-KL1040.duct.999">
+    <net:link xlink:href="#nl.imkl.KL1040.link.curve.2"/>
+    <net:inNetwork xlink:href="#nl.imkl.KL1040.net.middenspanning"/>
+  </imkl:Duct>
+
+  <!-- Dotted feature id + dashed hrefs joining a dotted-id network (mixed peer-id styles). -->
+  <us-net-common:UtilityLink gml:id="nl.imkl-KL1128.link.7">
+    <gml:LineString srsName="EPSG:28992">
+      <gml:posList>150500 450500 150510 450510</gml:posList>
+    </gml:LineString>
+  </us-net-common:UtilityLink>
+
+  <imkl:Elektriciteitskabel gml:id="nl.imkl.KL1128.kabel.4242">
+    <net:link xlink:href="#nl.imkl-KL1128.link.7"/>
+    <net:inNetwork xlink:href="#nl.imkl-KL1128.net.dotted"/>
+  </imkl:Elektriciteitskabel>
+
+</imkl:GebiedsinformatieLevering>

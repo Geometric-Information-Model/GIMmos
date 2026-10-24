@@ -1,0 +1,12 @@
+{
+  "Children": [
+    {
+      "Name": "Child",
+      "ID": 1,
+      "Version": "999.0.0"
+    }
+  ],
+  "Version": "1.2.0",
+  "Name": "Root",
+  "Materials": []
+}

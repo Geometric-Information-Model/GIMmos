@@ -1,0 +1,203 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+
+    <IsPackable>false</IsPackable>
+
+    <Platforms>x64</Platforms>
+
+    <AssemblyVersion>2.0.0.0</AssemblyVersion>
+
+    <FileVersion>2.0.0.0</FileVersion>
+  </PropertyGroup>
+
+	<PropertyGroup>
+		<DebugType>portable</DebugType>
+		<DebugSymbols>true</DebugSymbols>
+		<Optimize>false</Optimize>
+	</PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <PlatformTarget>x64</PlatformTarget>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ACadSharp" Version="3.4.2" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
+    <PackageReference Include="NLog" Version="6.1.0" />
+    <PackageReference Include="NUnit" Version="4.4.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="6.1.0" />
+    <PackageReference Include="coverlet.collector" Version="8.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Svg" Version="3.4.7" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\GIMCompress\GIMCompress.csproj" />
+    <ProjectReference Include="..\GIMtransfer\GIMtransfer.csproj" />
+    <ProjectReference Include="..\TestHelpers\TestHelpers.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="TestData\**\*.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="TestData\Klic\**\*.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="TestData\Klic\**\*.kml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="CadExA3DSNet">
+      <HintPath>..\CadexLib\CadExA3DSNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExACISNet">
+      <HintPath>..\CadexLib\CadExACISNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExAdvGeomNet">
+      <HintPath>..\CadexLib\CadExAdvGeomNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExBRepNet">
+      <HintPath>..\CadexLib\CadExBRepNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExCATNet">
+      <HintPath>..\CadexLib\CadExCATNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExColladaNet">
+      <HintPath>..\CadexLib\CadExColladaNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExCoreNet">
+      <HintPath>..\CadexLib\CadExCoreNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExCreoNet">
+      <HintPath>..\CadexLib\CadExCreoNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExDS3DXMLNet">
+      <HintPath>..\CadexLib\CadExDS3DXMLNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExDWGNet">
+      <HintPath>..\CadexLib\CadExDWGNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExDXFNet">
+      <HintPath>..\CadexLib\CadExDXFNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExFBXNet">
+      <HintPath>..\CadexLib\CadExFBXNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExGLTFNet">
+      <HintPath>..\CadexLib\CadExGLTFNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExIFCNet">
+      <HintPath>..\CadexLib\CadExIFCNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExIGESNet">
+      <HintPath>..\CadexLib\CadExIGESNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExINVNet">
+      <HintPath>..\CadexLib\CadExINVNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExJTNet">
+      <HintPath>..\CadexLib\CadExJTNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExMeshNet">
+      <HintPath>..\CadexLib\CadExMeshNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExNXNet">
+      <HintPath>..\CadexLib\CadExNXNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExOBJNet">
+      <HintPath>..\CadexLib\CadExOBJNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExParaNet">
+      <HintPath>..\CadexLib\CadExParaNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExPLYNet">
+      <HintPath>..\CadexLib\CadExPLYNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExPRCNet">
+      <HintPath>..\CadexLib\CadExPRCNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExRhinoNet">
+      <HintPath>..\CadexLib\CadExRhinoNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExSLDENet">
+      <HintPath>..\CadexLib\CadExSLDENet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExSLDNet">
+      <HintPath>..\CadexLib\CadExSLDNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExSTEPNet">
+      <HintPath>..\CadexLib\CadExSTEPNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExSTLNet">
+      <HintPath>..\CadexLib\CadExSTLNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExU3DNet">
+      <HintPath>..\CadexLib\CadExU3DNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExUnity">
+      <HintPath>..\CadexLib\CadExUnity.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExUSDNet">
+      <HintPath>..\CadexLib\CadExUSDNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExViewD3DNet">
+      <HintPath>..\CadexLib\CadExViewD3DNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExViewNet">
+      <HintPath>..\CadexLib\CadExViewNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExViewOpenGlNet">
+      <HintPath>..\CadexLib\CadExViewOpenGlNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExViewWinForms">
+      <HintPath>..\CadexLib\CadExViewWinForms.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExViewWPF">
+      <HintPath>..\CadexLib\CadExViewWPF.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExVRMLNet">
+      <HintPath>..\CadexLib\CadExVRMLNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExX3DNet">
+      <HintPath>..\CadexLib\CadExX3DNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExX3DPDFNet">
+      <HintPath>..\CadexLib\CadExX3DPDFNet.dll</HintPath>
+    </Reference>
+    <Reference Include="CadExX3MFNet">
+      <HintPath>..\CadexLib\CadExX3MFNet.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+
+</Project>

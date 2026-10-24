@@ -1,0 +1,19 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../GIMmanager"
+		},
+		{
+			"path": "../CoreWebApi"
+		},
+		{
+			"path": "../GIMocctWrapper"
+		}
+	],
+	"settings": {
+		"dotnet.defaultSolution": "TestUI/TestUI.sln"
+	}
+}

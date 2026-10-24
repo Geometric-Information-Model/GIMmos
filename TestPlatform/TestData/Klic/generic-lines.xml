@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Generic (non-IMKL) GML sample for the network-payload lane. Two feature types (road,
+  utilityPipe), several features, one feature carrying a WGS84-style srsName on its geometry and
+  another an alternate spelling; the reader must normalize them and group by feature element
+  type. No gml:boundedBy on purpose: the selection extent must be computed from the drawn lines.
+-->
+<gml:FeatureCollection
+    xmlns:gml="http://www.opengis.net/gml/3.2"
+    xmlns:app="http://example.org/app">
+  <gml:featureMember>
+    <app:road gml:id="road.1">
+      <app:name>N1</app:name>
+      <app:validFrom>2005-03-01</app:validFrom>
+      <app:geometrie>
+        <gml:LineString srsName="urn:ogc:def:crs:EPSG::4326">
+          <gml:posList>4.90 52.00 5.10 52.20</gml:posList>
+        </gml:LineString>
+      </app:geometrie>
+    </app:road>
+  </gml:featureMember>
+  <gml:featureMember>
+    <app:road gml:id="road.2">
+      <app:geometrie>
+        <gml:LineString srsName="EPSG:4326">
+          <gml:posList>5.10 52.20 5.20 52.30 5.30 52.40</gml:posList>
+        </gml:LineString>
+      </app:geometrie>
+    </app:road>
+  </gml:featureMember>
+  <gml:featureMember>
+    <app:utilityPipe gml:id="pipe.1">
+      <app:geometrie>
+        <gml:LineString srsName="epsg:4326">
+          <gml:posList>5.00 52.10 5.05 52.15</gml:posList>
+        </gml:LineString>
+      </app:geometrie>
+    </app:utilityPipe>
+  </gml:featureMember>
+  <!-- Inline feature: a direct child of the FeatureCollection, with no featureMember wrapper — it
+       must still be recognised as a feature and grouped by its element type. -->
+  <app:road gml:id="road.3">
+    <app:geometrie>
+      <gml:LineString srsName="EPSG:4326">
+        <gml:posList>5.00 52.10 5.20 52.30</gml:posList>
+      </gml:LineString>
+    </app:geometrie>
+  </app:road>
+</gml:FeatureCollection>

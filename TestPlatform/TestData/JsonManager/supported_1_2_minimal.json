@@ -1,0 +1,10 @@
+{
+  "Version": "1.2.0",
+  "Name": "Root",
+  "Materials": [
+    {
+      "BaseColour": "#FFFFFFFF",
+      "Shininess": 1.0
+    }
+  ]
+}

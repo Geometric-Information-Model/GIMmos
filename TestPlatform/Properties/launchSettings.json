@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "TestPlatform": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "COMPlus_EnableDiagnostics": "1"
+      }
+    }
+  }
+}

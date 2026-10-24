@@ -1,0 +1,13 @@
+{
+  "roots": [
+    ".",
+    "../GIMmanager",
+    "../CoreWebApi",
+    "../GIMocctWrapper",
+    "../GIMzip",
+    "../GIMfront"
+  ],
+  "readExtraRoots": [
+    "%USERPROFILE%\\.nuget\\packages"
+  ]
+}

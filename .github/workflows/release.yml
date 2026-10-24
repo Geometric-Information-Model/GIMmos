@@ -1,0 +1,60 @@
+name: Publish GIMcompress and GimUtilities to nuget.org
+
+# Publishes GimUtilities + GIMcompress to nuget.org on libs-v* tags.
+# Auth is Trusted Publishing (OIDC via NuGet/login), not a stored API key.
+# Repo variables: NUGET_USER (nuget.org username), NUGET_PUBLISH_ENABLED=true to arm.
+
+
+on:
+  push:
+    tags:
+      - 'libs-v*.*.*'
+
+jobs:
+  release-libs:
+    if: ${{ vars.NUGET_PUBLISH_ENABLED == 'true' }}
+    runs-on: windows-latest
+    permissions:
+      id-token: write          # OIDC for NuGet/login
+      contents: read
+
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Version from tag
+        id: ver
+        shell: pwsh
+        run: |
+          $v = "${{ github.ref_name }}" -replace '^libs-v',''
+          echo "version=$v" >> $env:GITHUB_OUTPUT
+
+      - name: Pack GimUtilities
+        shell: pwsh
+        run: |
+          dotnet pack "GimLogger\GimUtilities.csproj" -c Release -p:PackageVersion=${{ steps.ver.outputs.version }} -o ./dist
+
+      - name: Pack GIMcompress
+        shell: pwsh
+        run: |
+          dotnet pack "GIMCompress\GIMCompress.csproj" -c Release -p:PackageVersion=${{ steps.ver.outputs.version }} -o ./dist
+
+      - name: NuGet login (OIDC)
+        id: login
+        uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841 # v1.2.0
+        with:
+          user: ${{ vars.NUGET_USER }}
+
+      - name: Push
+        shell: pwsh
+        run: |
+          Get-ChildItem ./dist -Filter *.nupkg | ForEach-Object {
+            dotnet nuget push $_.FullName `
+              --source https://api.nuget.org/v3/index.json `
+              --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" `
+              --skip-duplicate
+          }

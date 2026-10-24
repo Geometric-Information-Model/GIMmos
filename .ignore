@@ -1,0 +1,8 @@
+!.*
+!.**
+!.cursor/**
+!WORKSPACE-PRIVATE.md
+!GIMtransfer-private.code-workspace
+!GIMmos-private.code-workspace
+!opencode.local.json
+!start-opencode.ps1

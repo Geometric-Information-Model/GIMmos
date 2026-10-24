@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-10-20T20:36:40Z",
+  "generated_by": "gim-tracker, plan 0007 step D0 (live probe)",
+  "site": "gim.atlassian.net",
+  "project": {
+    "key": "GIM",
+    "id": "10012",
+    "name": "GIMmos",
+    "default_type": "Task"
+  },
+  "board": {
+    "id": 9,
+    "name": "GIM bord"
+  },
+  "sprint": {
+    "supported": true,
+    "field_id": "customfield_10020",
+    "field_display_name": null,
+    "field_display_name_note": "Display name not observable via acli: `acli jira workitem view --json` returns names:null and acli exposes no field-list command. Field identified by its content (array of sprint objects) on GIM-85 and by the create payload accepted on GIM-159. JQL name is `sprint` (verified with JQL `project = GIM AND sprint = 378`).",
+    "jql_name": "sprint",
+    "create_value_example": 378,
+    "create_value_shape": "bare integer sprint id at additionalAttributes.customfield_10020",
+    "read_back_shape": "array of objects {id, name, state, boardId, startDate, endDate, goal}",
+    "set_on_create": {
+      "supported": true,
+      "command": "acli jira workitem create --from-json <payload with additionalAttributes.customfield_10020 = 378> --json",
+      "exit_code": 0,
+      "observed": "GIM-159 created with customfield_10020 = [{ id: 378, name: \"GIM Sprint 8\", state: \"active\", boardId: 9 }]"
+    },
+    "set_on_edit": {
+      "supported": false,
+      "evidence": "`acli jira workitem edit --generate-json` emits keys assignee, description, issues, labelsToAdd, labelsToRemove, summary, type - no additionalAttributes. Neither create nor edit has a --sprint flag. Sprint assignment must happen in the create --from-json payload."
+    },
+    "current_sprint": {
+      "resolvable": true,
+      "strategy": "acli jira board list-sprints --id 9 --state active --json; require exactly one sprint with state=active",
+      "command_observed": "acli jira board list-sprints --id 9 --state active --json",
+      "exit_code": 0,
+      "active_sprint_count": 1,
+      "observed_sprint_id": 378,
+      "observed_name": "GIM Sprint 8",
+      "observed_start_date": "2026-09-18T13:24:38.821Z",
+      "observed_end_date": "2026-10-13T11:09:28.000Z",
+      "note": "Board 9 returned exactly one active sprint. If a board ever returns zero or multiple active sprints, --current-sprint must fail and require an explicit sprint = <id> filter via --jql rather than pick one."
+    }
+  },
+  "constraints": [
+    "acli workitem create has no --sprint flag; sprint is settable only through additionalAttributes in --from-json (verified on GIM-159).",
+    "acli workitem edit --generate-json has no additionalAttributes; sprint cannot be changed after creation through acli (verified from the generated template).",
+    "acli jira sprint list-workitems requires both --board and --sprint; it cannot resolve the current sprint on its own.",
+    "acli jira sprint view requires --id; there is no current/newest shortcut.",
+    "acli has no field-list command; custom field display names are not observable (workitem view JSON returns names:null).",
+    "A payload assignee of null overrides a CLI --assignee argument: GIM-159 was created with assignee null, then assigned with `acli jira workitem assign --key GIM-159 --assignee '@me' --yes --json` (exit 0).",
+    "The transition flag is --status; there is no --to flag (verified in `acli jira workitem transition --help`)."
+  ],
+  "probe": {
+    "ticket": "GIM-159",
+    "id": "17365",
+    "summary": "[PROBE] GIM fleet plan 0007 D0 - disposable",
+    "initial_status": "To Do",
+    "final_status": "To Do",
+    "assigned": true,
+    "assign_exit_code": 0,
+    "sprint_id": 378,
+    "left_in_place": true,
+    "ticket_cleanup": "left in place; disposable, delete manually if desired"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "default_agent": "gim-orchestrator",
+  "subagent_depth": 3,
+  "shell": "pwsh.exe",
+  "instructions": [".opencode/harness-map.md"],
+  "permission": {
+    "external_directory": {
+      "../GIMmanager/**": "allow",
+      "../CoreWebApi/**": "allow",
+      "../GIMocctWrapper/**": "allow"
+    }
+  },
+  "agent": {
+    "build": { "permission": { "bash": { "*": "allow" } } },
+    "plan": { "permission": { "bash": { "*": "allow" } } },
+    "general": { "permission": { "bash": { "*": "allow" } } }
+  }
+}

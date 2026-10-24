@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "TestUI": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    }
+  }
+}

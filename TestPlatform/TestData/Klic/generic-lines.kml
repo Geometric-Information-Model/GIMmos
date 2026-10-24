@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Generic KML sample for the network-payload lane (KlicKind.Network). Two Folder layers plus an
+  orphan Placemark outside any Folder. Deliberately varied: a LineString with a TimeSpan, a
+  MultiGeometry whose Point must be ignored and whose first LineString must win, a nested
+  MultiGeometry-in-MultiGeometry (first LineString still wins), a 3-tuple (lon,lat,alt) LineString
+  whose altitude is dropped, an inline CDATA-split <coordinates> element, a gx:Track placemark
+  (ignored in phase 1), a standalone Point placemark and a Polygon placemark (both ignored in
+  phase 1), and a Placemark id used as sourceGmlId. KML coordinates are lon,lat (WGS84).
+-->
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2">
+  <Document>
+    <name>doc</name>
+    <Folder>
+      <name>Kabels</name>
+      <Placemark id="pm.cable.1">
+        <name>Kabel A</name>
+        <LineString>
+          <coordinates>4.90,52.00 4.95,52.05</coordinates>
+        </LineString>
+      </Placemark>
+      <Placemark id="pm.cable.2">
+        <name>Kabel B</name>
+        <TimeSpan>
+          <begin>2018-03-01T00:00:00Z</begin>
+          <end>2020-05-01T00:00:00Z</end>
+        </TimeSpan>
+        <MultiGeometry>
+          <Point><coordinates>4.91,52.01</coordinates></Point>
+          <LineString>
+            <coordinates>4.91,52.01 5.05,52.15</coordinates>
+          </LineString>
+        </MultiGeometry>
+      </Placemark>
+      <Placemark id="pm.alt.1">
+        <name>Hoogte</name>
+        <LineString>
+          <coordinates>4.92,52.02,7.5 4.96,52.06,8.5</coordinates>
+        </LineString>
+      </Placemark>
+      <Placemark id="pm.nested.1">
+        <name>Nested</name>
+        <MultiGeometry>
+          <MultiGeometry>
+            <Point><coordinates>5.009,52.109</coordinates></Point>
+            <LineString>
+              <coordinates>5.02,52.12 5.06,52.16</coordinates>
+            </LineString>
+          </MultiGeometry>
+          <LineString>
+            <coordinates>5.07,52.17 5.08,52.18</coordinates>
+          </LineString>
+        </MultiGeometry>
+      </Placemark>
+      <Placemark id="pm.cdata.1">
+        <name>CDATA</name>
+        <LineString>
+          <coordinates>4.93,52.03 <![CDATA[4.97,52.07]]></coordinates>
+        </LineString>
+      </Placemark>
+      <Placemark id="pm.track.1">
+        <name>Track</name>
+        <gx:Track>
+          <when>2010-01-01T00:00:00Z</when>
+          <gx:coord>5.10 52.20 0</gx:coord>
+          <gx:coord>5.11 52.21 0</gx:coord>
+        </gx:Track>
+      </Placemark>
+      <Placemark id="pm.point.1">
+        <name>Punt</name>
+        <Point><coordinates>4.85,51.95</coordinates></Point>
+      </Placemark>
+      <Placemark id="pm.poly.1">
+        <name>Vlak</name>
+        <Polygon>
+          <outerBoundaryIs>
+            <LinearRing>
+              <coordinates>4.80,51.90 4.90,51.90 4.90,52.00 4.80,52.00 4.80,51.90</coordinates>
+            </LinearRing>
+          </outerBoundaryIs>
+        </Polygon>
+      </Placemark>
+    </Folder>
+    <Folder>
+      <name>Leidingen</name>
+      <Placemark id="pm.pipe.1">
+        <name>Leiding A</name>
+        <LineString>
+          <coordinates>5.00,52.10 5.10,52.20</coordinates>
+        </LineString>
+      </Placemark>
+    </Folder>
+    <Placemark id="pm.orphan.1">
+      <name>Los</name>
+      <LineString>
+        <coordinates>5.20,52.30 5.30,52.40</coordinates>
+      </LineString>
+    </Placemark>
+  </Document>
+</kml>

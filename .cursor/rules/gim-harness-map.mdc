@@ -1,0 +1,20 @@
+---
+description: Cursor harness spawn/resume mechanics for the GIM fleet (HarnessToolMap Cursor column). Product loop stays in gim-orchestrate skill.
+alwaysApply: true
+---
+
+# GIM harness map (Cursor)
+
+Spawn/resume mechanics for Cursor. OpenCode column: `.opencode/harness-map.md`. Human dual crosswalk: `docs/plans/agents/0002-AGENTS-gim-opencode-fleet.plan.md` § Harness tool map. Term: `.agents/CONTEXT.md` (**HarnessToolMap**).
+
+| Action | Cursor |
+|---|---|
+| Invoke orchestrator | `/gim-orchestrate` skill on **main** (not Task-nested) |
+| Spawn subagent | Task `subagent_type: gim-*` |
+| Resume builder | Task `resume: <builder_agent_id>` |
+| Fresh critic | New Task; **never** resume critic |
+| Parallel explorers | Multiple Task; `run_in_background` OK |
+| Load skill | Read path / skill attach |
+| Prefs / plans / ADRs | Same paths under `.agents/` and `docs/` |
+
+Fleet roster and product loop: `.agents/skills/gim-orchestrate/SKILL.md`.

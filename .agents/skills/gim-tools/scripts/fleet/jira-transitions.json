@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-10-20T20:36:40Z",
+  "generated_by": "gim-tracker, plan 0007 step D0 (live probe)",
+  "project": "GIM",
+  "probe_ticket": "GIM-159",
+  "command_template": "acli jira workitem transition --key <key> --status \"<target status>\" --yes --json",
+  "flag_note": "`acli jira workitem transition --help` defines --status (there is no --to flag). --yes and --json are supported.",
+  "statuses": [
+    { "name": "To Do", "id": "10010", "category": "new" },
+    { "name": "In Progress", "id": "3", "category": "indeterminate" },
+    { "name": "In Review", "id": "10011", "category": "indeterminate" },
+    { "name": "Done", "id": "10002", "category": "done" }
+  ],
+  "observation": {
+    "all_direct": true,
+    "intermediate_status_required": false,
+    "pairs_tested": 12,
+    "pairs_succeeded": 12,
+    "pairs_failed": 0,
+    "note": "12 ordered pairs covered; 14 transition invocations (two pairs re-attempted while walking the sequence). Each invocation was a single direct command and returned exit 0 with {\"results\":[{\"status\":\"SUCCESS\",...}],\"successCount\":1}; no failure, no prompt, no intermediate hop. The GIM workflow therefore allows any status -> any status for this Task issue type, consistent with the four global transitions listed in docs/jira-board-specifications.md.",
+    "not_probed": "Self-transition (target status equals current status) was not attempted."
+  },
+  "routes": [
+    { "from": "To Do", "to": "In Progress", "direct": true, "sequence": ["In Progress"], "exit_codes": [0] },
+    { "from": "To Do", "to": "In Review", "direct": true, "sequence": ["In Review"], "exit_codes": [0] },
+    { "from": "To Do", "to": "Done", "direct": true, "sequence": ["Done"], "exit_codes": [0] },
+    { "from": "In Progress", "to": "To Do", "direct": true, "sequence": ["To Do"], "exit_codes": [0] },
+    { "from": "In Progress", "to": "In Review", "direct": true, "sequence": ["In Review"], "exit_codes": [0] },
+    { "from": "In Progress", "to": "Done", "direct": true, "sequence": ["Done"], "exit_codes": [0] },
+    { "from": "In Review", "to": "To Do", "direct": true, "sequence": ["To Do"], "exit_codes": [0] },
+    { "from": "In Review", "to": "In Progress", "direct": true, "sequence": ["In Progress"], "exit_codes": [0] },
+    { "from": "In Review", "to": "Done", "direct": true, "sequence": ["Done"], "exit_codes": [0] },
+    { "from": "Done", "to": "To Do", "direct": true, "sequence": ["To Do"], "exit_codes": [0] },
+    { "from": "Done", "to": "In Progress", "direct": true, "sequence": ["In Progress"], "exit_codes": [0] },
+    { "from": "Done", "to": "In Review", "direct": true, "sequence": ["In Review"], "exit_codes": [0] }
+  ],
+  "probe": {
+    "d3_source": "routes[].sequence",
+    "ticket_cleanup": "left in place; disposable, delete manually if desired",
+    "chronology": [
+    { "step": 1, "from": "To Do", "to": "In Progress", "exit_code": 0 },
+    { "step": 2, "from": "In Progress", "to": "Done", "exit_code": 0 },
+    { "step": 3, "from": "Done", "to": "To Do", "exit_code": 0 },
+    { "step": 4, "from": "To Do", "to": "In Review", "exit_code": 0 },
+    { "step": 5, "from": "In Review", "to": "In Progress", "exit_code": 0 },
+    { "step": 6, "from": "In Progress", "to": "To Do", "exit_code": 0 },
+    { "step": 7, "from": "To Do", "to": "Done", "exit_code": 0 },
+    { "step": 8, "from": "Done", "to": "In Review", "exit_code": 0 },
+    { "step": 9, "from": "In Review", "to": "To Do", "exit_code": 0 },
+    { "step": 10, "from": "To Do", "to": "In Progress", "exit_code": 0 },
+    { "step": 11, "from": "In Progress", "to": "In Review", "exit_code": 0 },
+    { "step": 12, "from": "In Review", "to": "Done", "exit_code": 0 },
+    { "step": 13, "from": "Done", "to": "In Progress", "exit_code": 0 },
+    { "step": 14, "from": "In Progress", "to": "To Do", "exit_code": 0 }
+    ]
+  },
+  "final_state": {
+    "key": "GIM-159",
+    "status": "To Do",
+    "assigned": true,
+    "assign_exit_code": 0,
+    "sprint_id": 378
+  }
+}

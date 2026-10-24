@@ -1,0 +1,12 @@
+{
+  "name": "GIMmos",
+  "private": true,
+  "description": "Pinned local CLIs for the GIM fleet. Not an application.",
+  "engines": {
+    "node": "^22.23.4"
+  },
+  "devDependencies": {
+    "@ast-grep/cli": "0.45.3",
+    "@colbymchenry/codegraph": "1.6.0"
+  }
+}

@@ -1,0 +1,68 @@
+name: Stale PR Discord Ping
+
+on:
+  schedule:
+    - cron: '0 10 * * *'
+  workflow_dispatch:
+
+permissions:
+  pull-requests: read
+
+jobs:
+  stale-pr-discord:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+
+    steps:
+      - name: Notify about stale pull requests
+        run: |
+          set -euo pipefail
+
+          now="$(date -u +%s)"
+          cutoff="$((now - 7 * 24 * 60 * 60))"
+          repo_name="${GITHUB_REPOSITORY##*/}"
+
+          message="$(
+            gh api --paginate --slurp \
+              --header "Accept: application/vnd.github+json" \
+              --header "X-GitHub-Api-Version: 2022-11-28" \
+              "repos/${GITHUB_REPOSITORY}/pulls?state=open&sort=created&direction=asc&per_page=100" |
+            jq -r --argjson cutoff "$cutoff" --argjson now "$now" --arg repo "$repo_name" '
+              add
+              | map(
+                  . as $pr
+                  | ($pr.created_at | fromdateiso8601) as $created
+                  | select($created < $cutoff)
+                  | {
+                      created: $created,
+                      number: $pr.number,
+                      title: $pr.title,
+                      days: (($now - $created) / 86400 | floor)
+                    }
+                )
+              | sort_by(.created)
+              | if length == 0 then
+                  empty
+                else
+                  ("⚠️ <@&1474843550045700216> Attention these PRs have been open for more than a week in the "
+                   + $repo
+                   + " Repo. Please look at them and merge them:\n"
+                   + (map("- PR #\(.number): \(.title). Open since \(.days) days ago.") | join("\n")))
+                end
+            '
+          )"
+
+          if [ -z "$message" ]; then
+            echo "No open pull requests older than seven days."
+            exit 0
+          fi
+
+          payload="$(jq -n --arg content "$message" \
+            '{username: "GitHub Bot", content: $content, allowed_mentions: {parse: [], roles: ["1474843550045700216"]}}')"
+          curl --fail-with-body --silent --show-error \
+            --request POST \
+            --header "Content-Type: application/json" \
+            --data "$payload" \
+            "$DISCORD_WEBHOOK_URL"
