@@ -172,7 +172,7 @@ Your command was not run: command '<cmd>' was denied by opencode permission plug
 
 ### Dual-sync rule
 
-Mirror the **intent** on the other harness (`.cursor/hooks/gim-permissions.ps1`
+Mirror the **intent** on the other harness (`.cursor/hooks/gim-permissions.mjs`
 + `.cursor/hooks/AGENTS.md`) unless the hook exists to handle a
 single-harness quirk. Document the exception in both harness docs. Current
 exception: the git `--` pathspec rule is opencode-only (Cursor passes
@@ -186,7 +186,7 @@ exception: the git `--` pathspec rule is opencode-only (Cursor passes
 | Silent allow | config allowlist only | Auto-run allowlist (UI) only — hook `allow` does NOT hide the ask UI |
 | Silent deny | `tool.execute.before` throw beats config | hook deny beats allowlist, skips `beforeShellExecution` |
 | Command scope | per command string (before-stage); per segment (ask eval) | one event per full command string |
-| Central lib call | spawns `pwsh -File` (lazy, cached) | dot-sources the lib in-process (no second spawn) |
+| Central lib call | spawns `pwsh -File` (lazy, cached) | in-process JS tokenizer; shared rules module (no pwsh) |
 | Parser output | JSON line on stdout | JSON line on stdout |
 | Event cadence | `permission.asked` bus event + SDK reply | `preToolUse` / `beforeShellExecution` stdin JSON |
 | Startup | plugins load at startup; restart to apply | hooks re-read from `hooks.json` |

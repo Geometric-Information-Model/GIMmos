@@ -1,12 +1,15 @@
 # Cursor hooks — harness docs
 
-Two hooks live in this directory, both wired from `.cursor/hooks.json` and both
-spawned as `pwsh -NoProfile -ExecutionPolicy Bypass -File <script>`:
+Two hooks live in this directory, both wired from `.cursor/hooks.json`:
 
-- `gim-permissions.ps1` — the production deny-only permission hook (plan 0004
-  C1, ADR 0007); the bulk of this document.
-- `gim-preload.ps1` — the per-agent context preload hook (ADR 0009); see
-  § [gim-preload](#gim-preload-context-preload) below.
+- `gim-permissions.mjs` — the production deny-only permission hook (plan 0004
+  C1, ADR 0007), run as
+  `node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON .cursor/hooks/gim-permissions.mjs`.
+  The bulk of this document.
+- `gim-preload.ps1` — the per-agent context preload hook (ADR 0009), still
+  spawned as `pwsh -NoProfile -ExecutionPolicy Bypass -File <script>`; see
+  § [gim-preload](#gim-preload-context-preload) below. The Task matcher on
+  this hook stays on pwsh.
 
 Cursor re-reads hooks from `hooks.json` per call — no restart needed to apply
 hook changes.
@@ -35,25 +38,27 @@ hook is the "discovery-at-failure" layer of
 - **Full string, one event.** Cursor sends one Shell call per event; chains
   (`;` / `&&` / `||`) are not split. A deny anywhere in the chain denies the
   whole call.
-- **Decision logic is structural** over the central command tree, produced by
-  the ONE parser lib (`.agents/skills/gim-tools/scripts/parse-command-tree.ps1`)
-  — **dot-sourced in-process** (`Get-GimCommandTree`, no second pwsh spawn;
-  the hook already runs under pwsh). Decisions are evaluated at
-  command-candidate positions (command names, args, non-string tokens,
-  envelope flags) — strings stay inert.
+- **Decision logic is structural** over a command tree with the same shape as
+  `.agents/skills/gim-tools/scripts/parse-command-tree.ps1`. This hook builds
+  that tree in-process (no pwsh spawn) and evaluates it with the shared
+  predicates in `.opencode/plugins/lib/gim-permissions-rules.js`. Decisions
+  use command names, args, non-string tokens, and envelope flags
+  (`hasSubstitution`, `staticCalls`, `memberCalls`) — strings stay inert.
 
 ## How to add a rule
 
-1. Add the decision predicate in `gim-permissions.ps1` (mirroring
-   `.opencode/plugins/lib/gim-permissions-rules.js` — dual-sync rule).
-   Decide structural facts from the tree: command names (`commands[].name`),
-   args (`commands[].args`), non-string tokens (`commands[].tokens`), envelope
-   flags (`hasSubstitution`, `staticCalls`), or the `memberCalls` envelope —
-   never raw command text, so strings stay inert.
-2. Wire it into `Get-GimDenyForTree` (rule order = first matching rule wins;
-   decisions return `{ rule, reason, alternative }` per the message contract
-   above — never a full framed message).
-3. Add cases to `tests/gim-permissions.tests.ps1`.
+1. Add the decision predicate in
+   `.opencode/plugins/lib/gim-permissions-rules.js`. The Cursor hook imports
+   that module (`denyDecision` / `toolPathDecision`); it does not keep a
+   second copy. Decide structural facts from the tree: command names
+   (`commands[].name`), args (`commands[].args`), non-string tokens
+   (`commands[].tokens`), envelope flags (`hasSubstitution`, `staticCalls`),
+   or the `memberCalls` envelope — never raw command text, so strings stay
+   inert. Do not call `gitPathspecDecision` from this hook (OpenCode-only).
+2. `denyDecision` is the rule order (first matching rule wins). Decisions
+   return `{ rule, reason, alternative }` — never a full framed message.
+   `formatDenyMessage` in the same module builds the Cursor framing.
+3. Add cases to `tests/gim-permissions.test.mjs`.
 4. Update this document.
 5. Live-verify in Cursor (hook re-reads per call; no restart needed).
 
@@ -61,23 +66,25 @@ hook is the "discovery-at-failure" layer of
 
 - **Structural matching over substring.** A string argument containing
   `ForEach-Object` must not deny. Check command names / non-string tokens.
-- **Central lib only — never local parsing.** The hook dot-sources
-  `.agents/skills/gim-tools/scripts/parse-command-tree.ps1` in-process. No
-  second pwsh spawn, ever.
+- **No pwsh spawn.** The hook tokenizes the command in-process and feeds the
+  shared rules module. OpenCode still spawns
+  `.agents/skills/gim-tools/scripts/parse-command-tree.ps1` for its own plugin.
 - **File-only logs.** `%TEMP%\cursor\gim-permissions.log` (capped ~5 MB,
   truncate-on-open when oversized). NEVER write anything but JSON to stdout.
 - **JSON-only stdout.** `{}` (silent/pass) or
   `{"permission":"deny","agent_message":"...","user_message":"..."}`. A
   catch-all around the whole handler guarantees ANY error → `{}` — a broken
   hook must not block the IDE.
-- **Per-event spawn cost.** Cursor spawns `pwsh -File` per event (~3 s). Keep
-  `hooks.json` minimal: only the two pre-gates that decide (`preToolUse` +
-  `beforeShellExecution`); post-events are not wired (they only log).
-- **Fail-silent on parser failure.** If the central lib can't load or the tree
-  can't be produced, the hook says `{}` and the Auto-run/ask flow takes over.
+- **Per-event spawn cost.** Cursor starts a new `node` process per event.
+  Keep `hooks.json` minimal: only the two pre-gates that decide (`preToolUse`
+  + `beforeShellExecution`); post-events are not wired (they only log).
+  `gim-preload.ps1` is still a pwsh process, and only on `sessionStart` and
+  the Task matcher.
+- **Fail-silent on internal failure.** If the handler throws, the hook says
+  `{}` and the Auto-run/ask flow takes over.
 - **Failure-mode split (user-locked 2026-08-20).** Empty stdin payload →
   `{}` (fail-open — nothing received, nothing to decide). Non-empty
-  unparseable payload (`ConvertFrom-Json` fails, e.g. malformed JSON or a
+  unparseable payload (`JSON.parse` fails, e.g. malformed JSON or a
   mojibake-with-BOM prefix) → **generic deny** in the deny-message contract
   framing: "the permission hook could not interpret the permission payload
   (parse failed) — check `%TEMP%\cursor\gim-permissions.log`". The hook never
@@ -135,7 +142,7 @@ this hook has NO git `--` rule and NO `.gitignore` rule (do not add them).
 | Silent allow | config allowlist only | Auto-run allowlist (UI) only — hook `allow` does NOT hide the ask UI |
 | Silent deny | `tool.execute.before` throw beats config | hook deny beats allowlist, skips `beforeShellExecution` |
 | Command scope | per command string (before-stage); per segment (ask eval) | one event per full command string |
-| Central lib call | spawns `pwsh -File` (lazy, cached) | dot-sources the lib in-process (no second spawn) |
+| Central lib call | spawns `pwsh -File` (lazy, cached) | in-process JS tokenizer; shared `gim-permissions-rules.js` (no pwsh) |
 | Parser output | JSON line on stdout | JSON line on stdout |
 | Event cadence | `permission.asked` bus event + SDK reply | `preToolUse` / `beforeShellExecution` stdin JSON |
 | Startup | plugins load at startup; restart to apply | hooks re-read from `hooks.json` per call |
