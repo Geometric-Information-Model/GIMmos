@@ -30,6 +30,12 @@
 - Tests: `dotnet test "TestPlatform/TestPlatform.csproj" -c Debug -p:Platform=x64`
 - UI harness (manual): open `TestUI/TestUI - Dll.sln` in Visual Studio, build `Debug|x64`.
 
+## Linux workspace layout
+
+GimBin resolves `GIMCompress` through a sibling directory named `GIMtransfer`. On a case-sensitive filesystem, MSBuild treats a symlink and its target as different projects, so the real checkout has to be named `GIMtransfer` and `GIMmos` has to be a symlink to that directory. `TestHelpers` references `GIMCompress/GIMcompress.csproj`; that spelling needs a case alias next to `GIMCompress.csproj`.
+
+Cloud agents keep that layout, MariaDB, and the gitignored CoreWebApi secret file outside the repo. GIMmanager WinForms and `GIMocctCLI` are Windows builds. On Linux the local processes are CoreWebApi at `https://localhost:7009`, GIMfront at `https://127.0.0.1:3000`, and the SignalR host at `http://127.0.0.1:4300` with `GIM_API_TARGET=local`. Build `GIMtransfer` through the real `GIMtransfer` directory. Building that project through the `GIMmos` symlink makes MSBuild treat the symlink and the directory as two projects.
+
 ## Dependencies / Interop Notes
 - Runtime is .NET (`net10.0` / `net10.0-windows` projects).
 - `GIMtransfer` prefers project references to external proprietary repos when present:
