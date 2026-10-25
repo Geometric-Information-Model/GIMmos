@@ -1,6 +1,6 @@
-# GIMtransfer
+# GIMmos
 
-GIMtransfer is a .NET library for GIM CAD data workflows. It reads, transforms,
+GIMmos is a .NET Ecosystem for GIM CAD data workflows. It reads, transforms,
 and writes model data.
 
 ## Repository map
