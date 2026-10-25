@@ -48,7 +48,7 @@ forms, plus the `Import-Module GIMTools*` name form).
 | Harness | Status | Where each rule lives |
 | --- | --- | --- |
 | opencode | **wired** | plugin `.opencode/plugins/gim-permissions.js` + decision predicates in `lib/gim-permissions-rules.js` (deny-with-message, git `--` before-stage throw + ask-stage reject — see Hooks + Git `--` sections); config rules in `opencode.local.json` (machine-local, gitignored) with the team copy in `opencode.local.template.jsonc` — allows live there, **no message-carrying denies in config** (lean deny posture, ADR 0007 §5) |
-| Cursor | **wired** | hook `.cursor/hooks/gim-permissions.ps1` (wired via `.cursor/hooks.json` for `preToolUse` + `beforeShellExecution`); silent-allow layer = user Auto-run allowlist per the checklist in `.cursor/hooks/AGENTS.md`; `.cursor/cli.json` unused by the IDE agent |
+| Cursor | **wired** | hook `.cursor/hooks/gim-permissions.mjs` (wired via `.cursor/hooks.json` for `preToolUse` + `beforeShellExecution`); silent-allow layer = user Auto-run allowlist per the checklist in `.cursor/hooks/AGENTS.md`; `.cursor/cli.json` unused by the IDE agent |
 | Claude Code | **not wired** | apply the allow/deny lists below if used (verify live); no hook/plugin exists there |
 
 ## Allow list
@@ -287,15 +287,17 @@ git push --force / -f / --force-with-lease
   in `lib/gim-permissions-rules.js`. Deny-with-message via
   `tool.execute.before` throw; git `--` pathspec enforcement via before-stage
   throw + ask-stage reject/do-nothing; **never auto-allows** (AGENTS ADR 0007 §1a).
-- Cursor hook: `.cursor/hooks/gim-permissions.ps1` (wired via
+- Cursor hook: `.cursor/hooks/gim-permissions.mjs` (wired via
   `.cursor/hooks.json` for `preToolUse` + `beforeShellExecution`), deny via
-  `{permission:"deny", agent_message, user_message}`.
-- Central command parser — ONE lib, both harnesses:
+  `{permission:"deny", agent_message, user_message}`. It imports
+  `lib/gim-permissions-rules.js` and tokenizes commands in-process, so a
+  Cursor event does not start pwsh.
+- Central command parser for OpenCode:
   `.agents/skills/gim-tools/scripts/parse-command-tree.ps1` (pwsh
-  `ParseInput` → JSON tree). The Cursor hook **dot-sources it in-process**
-  (`Get-GimCommandTree`, no second spawn); the opencode plugin **spawns**
-  `pwsh -File` lazily with a per-command cache. Never re-implement parsing
-  locally.
+  `ParseInput` → JSON tree). The opencode plugin **spawns** `pwsh -File`
+  lazily with a per-command cache. The Cursor hook does not call that lib;
+  it builds the same tree shape in JavaScript and runs the shared
+  predicates.
 - **Git `--` quirk is wired** (opencode): before-stage throw when the first
   file after `git <cmd> --` is not `.gitignore` (sacrificial-token hint);
   `.gitignore`-first runs silent; ask-stage reject/do-nothing is the safety
@@ -379,7 +381,7 @@ only the default in-place directory. Anything else writing under
 | Harness | Config home (user-owned) | Matching model | Status (plan 0004) | Notes |
 | --- | --- | --- | --- | --- |
 | opencode | `opencode.json` / `opencode.local.json` → `permission.bash.allow` / `.deny` arrays | `*` / `?` globs, **last-match-wins**, AST-aware (matches the parsed command, not the raw string) | **wired** — live rules in `opencode.local.json` (gitignored) + team copy `opencode.local.template.jsonc`; deny-with-message in `.opencode/plugins/gim-permissions.js` | Prefer `"<cmd>*"` over `"<cmd> *"` (trailing-space quirk below). Verify each rule live. |
-| Cursor | Cursor settings allow/deny lists (or `.cursor/rules/*.mdc`) | **Prefix-only** — `gim-list:*` matches any command starting with `gim-list` | **wired** — hook `.cursor/hooks/gim-permissions.ps1` (`hooks.json`); Auto-run allowlist checklist in `.cursor/hooks/AGENTS.md` | Longer prefixes disambiguate (e.g. `git status` before any broader `git*`). No glob power beyond the prefix. **Must use the scoped git forms from the allow-list warning** (`git branch -l`, `git add -- <path...>`, ...). |
+| Cursor | Cursor settings allow/deny lists (or `.cursor/rules/*.mdc`) | **Prefix-only** — `gim-list:*` matches any command starting with `gim-list` | **wired** — hook `.cursor/hooks/gim-permissions.mjs` (`hooks.json`); Auto-run allowlist checklist in `.cursor/hooks/AGENTS.md` | Longer prefixes disambiguate (e.g. `git status` before any broader `git*`). No glob power beyond the prefix. **Must use the scoped git forms from the allow-list warning** (`git branch -l`, `git add -- <path...>`, ...). |
 | Claude Code | `~/.claude/settings.json` → `permissions.allow` / `deny` | Prefix-style | **not wired** | Similar to Cursor; verify the exact pattern forms on the live harness. **Must use the scoped git forms from the allow-list warning.** |
 
 Matching-power notes are a starting point, not ground truth — verify each rule
