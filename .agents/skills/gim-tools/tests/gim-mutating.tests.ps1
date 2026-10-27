@@ -150,10 +150,10 @@ Describe 'gim-fix' {
         { gim-fix trailing-ws $cleanFile --to lf } | Should -Throw -ExpectedMessage '*invalid --to*'
     }
     It 'rejects paths outside the write roots' {
-        { gim-fix eof-newline 'C:\Windows\notepad.exe' } | Should -Throw -ExpectedMessage '*not contained*'
+        { gim-fix eof-newline (Get-GimTestOutsidePath 'notepad.exe') } | Should -Throw -ExpectedMessage '*not contained*'
         Push-Location $repoRoot
         try {
-            { gim-fix eof-newline '..\..\..\Windows\notepad.exe' } | Should -Throw -ExpectedMessage '*not contained*'
+            { gim-fix eof-newline (Get-GimTestParentEscape -Leaf ('Windows' + [System.IO.Path]::DirectorySeparatorChar + 'notepad.exe')) } | Should -Throw -ExpectedMessage '*not contained*'
         } finally {
             Pop-Location
         }
@@ -248,8 +248,8 @@ Describe 'gim-write' {
         (Get-GimBytes $f).Length | Should -Be 6
     }
     It 'rejects escape and env-var targets' {
-        { 'x' | gim-write --path 'C:\Windows\evil.txt' --from-stdin } | Should -Throw -ExpectedMessage '*not contained*'
-        { 'x' | gim-write --path '..\..\..\Windows\evil.txt' --from-stdin } | Should -Throw -ExpectedMessage '*not contained*'
+        { 'x' | gim-write --path (Get-GimTestOutsidePath 'evil.txt') --from-stdin } | Should -Throw -ExpectedMessage '*not contained*'
+        { 'x' | gim-write --path (Get-GimTestParentEscape -Leaf ('Windows' + [System.IO.Path]::DirectorySeparatorChar + 'evil.txt')) --from-stdin } | Should -Throw -ExpectedMessage '*not contained*'
         { 'x' | gim-write --path '%TEMP%\evil.txt' --from-stdin } | Should -Throw -ExpectedMessage '*environment variables*'
     }
     It 'stays repo-only: rejects an OS temp-root target' {
@@ -386,10 +386,10 @@ Describe 'gim-apply' {
         (Test-Path -LiteralPath $f) | Should -Be $false
     }
     It 'rejects a path outside both the repo and the OS temp root' {
-        { gim-apply --create-empty 'C:\Windows\gim-apply-nope.txt' } | Should -Throw -ExpectedMessage '*not contained*'
+        { gim-apply --create-empty (Get-GimTestNonTempOutsidePath 'gim-apply-nope.txt') } | Should -Throw -ExpectedMessage '*not contained*'
         Push-Location $repoRoot
         try {
-            { gim-apply --touch '..\..\..\Windows\gim-apply-nope.txt' } | Should -Throw -ExpectedMessage '*not contained*'
+            { gim-apply --touch (Get-GimTestParentEscape -Leaf ('Windows' + [System.IO.Path]::DirectorySeparatorChar + 'gim-apply-nope.txt')) } | Should -Throw -ExpectedMessage '*not contained*'
         } finally {
             Pop-Location
         }
@@ -410,7 +410,9 @@ Describe 'gim-apply temp-root safety floor (module-internal)' {
             { Resolve-GimSafeTempRoot -Path $driveRoot } | Should -Throw -ExpectedMessage '*drive root*'
         }
         It 'rejects the user profile' {
-            { Resolve-GimSafeTempRoot -Path $env:USERPROFILE } | Should -Throw -ExpectedMessage '*protected directory*'
+            $profile = [Environment]::GetFolderPath([System.Environment+SpecialFolder]::UserProfile)
+            if ([string]::IsNullOrWhiteSpace($profile)) { $profile = $HOME }
+            { Resolve-GimSafeTempRoot -Path $profile } | Should -Throw -ExpectedMessage '*protected directory*'
         }
         It 'rejects a parent of the repo root' {
             $repoParent = Split-Path -Parent (Get-GimRepoRoot)
@@ -418,7 +420,13 @@ Describe 'gim-apply temp-root safety floor (module-internal)' {
         }
         It 'rejects a path shallower than two segments below the drive root' {
             $shallow = Join-Path ([System.IO.Path]::GetPathRoot((Get-GimRepoRoot))) 'gim-shallow-temp'
-            { Resolve-GimSafeTempRoot -Path $shallow } | Should -Throw -ExpectedMessage '*at least two*'
+            if ([System.IO.Path]::DirectorySeparatorChar -eq [char]'/') {
+                # /tmp is one segment and is the OS temp root, so Unix allows
+                # one segment. A drive root is rejected by the test above.
+                { Resolve-GimSafeTempRoot -Path $shallow } | Should -Not -Throw
+            } else {
+                { Resolve-GimSafeTempRoot -Path $shallow } | Should -Throw -ExpectedMessage '*at least two*'
+            }
         }
         It 'rejects a UNC path' {
             { Resolve-GimSafeTempRoot -Path '\\server\share\gim-temp' } | Should -Throw -ExpectedMessage '*UNC*'

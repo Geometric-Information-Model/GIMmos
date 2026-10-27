@@ -147,7 +147,7 @@ Describe 'gim-grep' {
         @($env.items)[0].capture | Should -Be 'alpha'
     }
     It 'rejects a path outside the roots' {
-        { gim-grep 'C:\Windows' --pattern 'x' } | Should -Throw
+        { gim-grep (Get-GimTestOutsidePath) --pattern 'x' } | Should -Throw
     }
     It 'errors on a missing path' {
         { gim-grep (Join-Path $scratch 'nope.txt') --pattern 'x' } | Should -Throw

@@ -2,16 +2,29 @@
 # symlink handling, roots.json loading (env expansion), containment checks,
 # the gim-apply temp-root safety floor, and Resolve-ContainedPath used by
 # every verb that touches paths.
+# Separators: Windows '\', Linux '/'. Both are accepted on every platform.
+
+function Split-GimPathSegments {
+    param(
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
+        [string]$Relative
+    )
+    return @($Relative -split '[\\/]' | Where-Object { $_ -ne '' })
+}
 
 function Get-GimRepoRoot {
     <#
     .SYNOPSIS
         Locate the GIMmos repo root by walking up from the module dir
-        until a .git marker is found.
+        until a .git marker is found. Returns the real path so a symlink
+        checkout (GIMmos -> GIMtransfer) compares equal to resolved files.
     #>
     $dir = $script:GimModuleRoot
     while ($dir) {
-        if (Test-Path -LiteralPath (Join-Path $dir '.git')) { return $dir }
+        if (Test-Path -LiteralPath (Join-Path $dir '.git')) {
+            return (Get-GimRealPath -Path $dir)
+        }
         $parent = Split-Path -Parent $dir
         if (-not $parent -or $parent -eq $dir) { break }
         $dir = $parent
@@ -37,12 +50,26 @@ function Get-GimRealPath {
     $root = [System.IO.Path]::GetPathRoot($full)
     if ($full -eq $root) { return $full }
 
-    $rel = $full.Substring($root.Length).TrimEnd('\')
-    $parts = @($rel -split '\\' | Where-Object { $_ -ne '' })
+    # .NET GetFullPath collapses '..' only for the platform separator. Split
+    # both separators and pop '..' here so a Windows-style relative path cannot
+    # stay lexically inside the repo on Linux.
+    $rel = $full.Substring($root.Length).TrimEnd([char[]]@('\', '/'))
+    $parts = @(Split-GimPathSegments -Relative $rel)
     $current = $root
+    $sep = [string][System.IO.Path]::DirectorySeparatorChar
 
     for ($i = 0; $i -lt $parts.Count; $i++) {
-        $candidate = [System.IO.Path]::Combine($current, $parts[$i])
+        $part = $parts[$i]
+        if ($part -eq '.') { continue }
+        if ($part -eq '..') {
+            $trimmed = $current.TrimEnd([char[]]@('\', '/'))
+            $rootTrim = $root.TrimEnd([char[]]@('\', '/'))
+            if ($trimmed -eq $rootTrim -or $trimmed -eq '') { continue }
+            $parent = [System.IO.Path]::GetDirectoryName($trimmed)
+            if ([string]::IsNullOrEmpty($parent)) { $current = $root } else { $current = $parent }
+            continue
+        }
+        $candidate = [System.IO.Path]::Combine($current, $part)
         if (Test-Path -LiteralPath $candidate) {
             $item = Get-Item -LiteralPath $candidate -Force -ErrorAction SilentlyContinue
             if ($item -and ($item.Attributes -band [System.IO.FileAttributes]::ReparsePoint) -and $item.Target) {
@@ -54,6 +81,7 @@ function Get-GimRealPath {
                 # pwsh 7 (AGENTS ADR 0003; setup guide 0001). PS 5.1 is best-effort
                 # for data-only verb code only.
                 $target = $item.Target
+                if ($target -is [System.Array]) { $target = [string]$target[0] }
                 if (-not [System.IO.Path]::IsPathRooted($target)) {
                     $target = [System.IO.Path]::GetFullPath((Join-Path ([System.IO.Path]::GetDirectoryName($candidate)) $target))
                 } else {
@@ -61,7 +89,7 @@ function Get-GimRealPath {
                 }
                 if ($i -lt $parts.Count - 1) {
                     $remaining = $parts[($i + 1)..($parts.Count - 1)]
-                    return Get-GimRealPath -Path ([System.IO.Path]::Combine($target, ($remaining -join '\'))) -Depth ($Depth + 1)
+                    return Get-GimRealPath -Path ([System.IO.Path]::Combine($target, ($remaining -join $sep))) -Depth ($Depth + 1)
                 }
                 return Get-GimRealPath -Path $target -Depth ($Depth + 1)
             }
@@ -124,8 +152,15 @@ function Test-GimContainedPath {
         [string[]]$RootRealPaths
     )
     foreach ($root in $RootRealPaths) {
-        if ($RealPath -eq $root) { return $true }
-        if ($RealPath.StartsWith(($root + '\'), [System.StringComparison]::OrdinalIgnoreCase)) { return $true }
+        if ([string]::Equals($RealPath, $root, [System.StringComparison]::OrdinalIgnoreCase)) { return $true }
+        $rootTrim = $root.TrimEnd([char[]]@('\', '/'))
+        # A filesystem root trims to empty. Do not treat that as a prefix of
+        # every path; only an equal root matches above.
+        if ([string]::IsNullOrEmpty($rootTrim)) { continue }
+        $realTrim = $RealPath.TrimEnd([char[]]@('\', '/'))
+        if ([string]::Equals($realTrim, $rootTrim, [System.StringComparison]::OrdinalIgnoreCase)) { return $true }
+        if ($RealPath.StartsWith($rootTrim + '\', [System.StringComparison]::OrdinalIgnoreCase)) { return $true }
+        if ($RealPath.StartsWith($rootTrim + '/', [System.StringComparison]::OrdinalIgnoreCase)) { return $true }
     }
     return $false
 }
@@ -238,10 +273,14 @@ function Resolve-GimSafeTempRoot {
     if ($real -eq $root) {
         Write-GimError "invalid temp root '$Path': a drive root is not allowed"
     }
-    $rel = $real.Substring($root.Length).TrimEnd('\')
-    $segments = @($rel -split '\\' | Where-Object { $_ -ne '' })
-    if ($segments.Count -lt 2) {
-        Write-GimError "invalid temp root '$Path': must sit at least two path segments below the drive root"
+    $rel = $real.Substring($root.Length).TrimEnd([char[]]@('\', '/'))
+    $segments = @(Split-GimPathSegments -Relative $rel)
+    # Windows temp lives several segments under the drive. The Unix temp
+    # directory is /tmp (one segment) and is still a safe leaf.
+    $minSegments = 2
+    if ([System.IO.Path]::DirectorySeparatorChar -eq [char]'/') { $minSegments = 1 }
+    if ($segments.Count -lt $minSegments) {
+        Write-GimError "invalid temp root '$Path': must sit at least $minSegments path segment(s) below the drive root"
     }
 
     $protected = @(

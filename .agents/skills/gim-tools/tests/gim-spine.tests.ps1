@@ -108,7 +108,7 @@ Describe 'gim-list' {
         try {
             [System.IO.File]::WriteAllText((Join-Path $outside 'leak.txt'), 'x', (New-Object System.Text.UTF8Encoding($false)))
             $link = Join-Path $scratch 'jlink'
-            New-Item -ItemType Junction -Path $link -Target $outside | Out-Null
+            New-GimTestReparsePoint -Path $link -Target $outside | Out-Null
             [System.IO.File]::WriteAllText((Join-Path $scratch 'real.txt'), 'x', (New-Object System.Text.UTF8Encoding($false)))
             $out = @(gim-list --glob (".agent-scratch/$scratchName/*.txt"))
             $out.Count | Should -Be 1
@@ -147,13 +147,13 @@ Describe 'gim-list' {
         @($env.items).Count | Should -Be 3
     }
     It 'rejects an absolute path outside the roots' {
-        { gim-list 'C:\Windows' } | Should -Throw
-        { gim-list 'C:\Windows' --allow-missing } | Should -Throw
+        { gim-list (Get-GimTestOutsidePath) } | Should -Throw
+        { gim-list (Get-GimTestOutsidePath) --allow-missing } | Should -Throw
     }
     It 'rejects a ..\ escape path' {
         Push-Location $repoRoot
         try {
-            { gim-list '..\..\..\Windows' } | Should -Throw
+            { gim-list (Get-GimTestParentEscape) } | Should -Throw
         } finally {
             Pop-Location
         }

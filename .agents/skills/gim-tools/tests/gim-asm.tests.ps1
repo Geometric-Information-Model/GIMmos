@@ -15,9 +15,26 @@ Describe 'gim-asm' {
     BeforeAll {
         $repoRoot = Get-GimTestRepoRoot
         $scratch = Join-Path $repoRoot ('.agent-scratch\gim-asm-' + [guid]::NewGuid().ToString('N'))
-        $frameworkDir = 'C:\Windows\Microsoft.NET\Framework64\v4.0.30319'
-        if (-not (Test-Path -LiteralPath $frameworkDir)) { $frameworkDir = 'C:\Windows\Microsoft.NET\Framework\v4.0.30319' }
-        $source = Join-Path $frameworkDir 'mscorlib.dll'
+        $source = $null
+        $script:gimAsmExpectRegistry = $false
+        if ([System.IO.Path]::DirectorySeparatorChar -eq '\') {
+            $frameworkDir = 'C:\Windows\Microsoft.NET\Framework64\v4.0.30319'
+            if (-not (Test-Path -LiteralPath $frameworkDir)) { $frameworkDir = 'C:\Windows\Microsoft.NET\Framework\v4.0.30319' }
+            $candidate = Join-Path $frameworkDir 'mscorlib.dll'
+            if (Test-Path -LiteralPath $candidate) {
+                $source = $candidate
+                $script:gimAsmExpectRegistry = $true
+            }
+        }
+        if (-not $source) {
+            $dotnetRoot = $env:DOTNET_ROOT
+            if ([string]::IsNullOrWhiteSpace($dotnetRoot)) { $dotnetRoot = '/usr/local/share/dotnet' }
+            $core = @(Get-ChildItem -LiteralPath (Join-Path $dotnetRoot 'shared/Microsoft.NETCore.App') -Filter 'System.Private.CoreLib.dll' -Recurse -File -ErrorAction SilentlyContinue | Select-Object -First 1)
+            if ($core.Count -gt 0) {
+                $source = $core[0].FullName
+                $script:gimAsmExpectRegistry = $false
+            }
+        }
         $target = Join-Path $scratch 'mscorlib.dll'
     }
 
@@ -34,7 +51,11 @@ Describe 'gim-asm' {
         $out.Count | Should -BeGreaterThan 500
         $out | Should -Contain "${target}: System.Object"
         $out | Should -Contain "${target}: System.Int32"
-        $out | Should -Contain "${target}: Microsoft.Win32.Registry"
+        if ($script:gimAsmExpectRegistry) {
+            $out | Should -Contain "${target}: Microsoft.Win32.Registry"
+        } else {
+            $out | Should -Contain "${target}: System.String"
+        }
     }
     It 'caps text output at 500 items with a truncation marker' {
         $out = @(gim-asm types --path $target)
@@ -79,7 +100,7 @@ Describe 'gim-asm' {
         { gim-asm types --path (Join-Path $scratch 'nope.dll') } | Should -Throw -ExpectedMessage '*path does not exist*'
     }
     It 'rejects a path outside the roots' {
-        { gim-asm types --path 'C:\Windows\System32\kernel32.dll' } | Should -Throw -ExpectedMessage '*not contained*'
+        { gim-asm types --path (Get-GimTestOutsidePath 'System32\kernel32.dll') } | Should -Throw -ExpectedMessage '*not contained*'
     }
     It 'errors without --package or --path' {
         { gim-asm types } | Should -Throw -ExpectedMessage '*give --package <id>/<ver> or --path <dll>*'

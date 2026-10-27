@@ -6,6 +6,7 @@
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $ModulePath = Join-Path $here '..\scripts\GIMTools\GIMTools.psd1'
 Import-Module $ModulePath -Force -DisableNameChecking
+. (Join-Path $here 'gim-test-common.ps1')
 
 InModuleScope GIMTools {
     Describe 'Quote-Arg' {
@@ -46,6 +47,7 @@ InModuleScope GIMTools {
 
     Describe 'Get-GimRoots' {
         It 'expands %VAR% entries in roots' {
+            if ([string]::IsNullOrWhiteSpace($env:TEMP)) { $env:TEMP = [System.IO.Path]::GetTempPath().TrimEnd([char[]]@('\', '/')) }
             $tmp = Join-Path ([System.IO.Path]::GetTempPath()) ('gim-roots-' + [guid]::NewGuid().ToString('N'))
             New-Item -ItemType Directory -Path $tmp -Force | Out-Null
             try {
@@ -80,16 +82,17 @@ InModuleScope GIMTools {
             $resolved | Should -Be ([System.IO.Path]::GetFullPath((Join-Path $repoRoot 'docs')))
         }
         It 'rejects a path outside the roots' {
-            { Resolve-ContainedPath -Path 'C:\Windows' } | Should -Throw
+            { Resolve-ContainedPath -Path (Get-GimTestOutsidePath) } | Should -Throw
         }
         It 'rejects a ..\ escape even when it would resolve to a real path' {
-            { Resolve-ContainedPath -Path '..\..\..\Windows' } | Should -Throw
+            { Resolve-ContainedPath -Path (Get-GimTestParentEscape) } | Should -Throw
         }
         It 'rejects a ..\ escape from inside a contained dir' {
-            { Resolve-ContainedPath -Path 'docs\..\..\..\Windows' } | Should -Throw
+            $sep = [System.IO.Path]::DirectorySeparatorChar
+            { Resolve-ContainedPath -Path ('docs' + $sep + (Get-GimTestParentEscape)) } | Should -Throw
         }
         It 'rejects an escape even with -AllowMissing (containment never forgiven)' {
-            { Resolve-ContainedPath -Path 'C:\Windows' -AllowMissing } | Should -Throw
+            { Resolve-ContainedPath -Path (Get-GimTestOutsidePath) -AllowMissing } | Should -Throw
         }
         It 'errors on a missing contained path without -AllowMissing' {
             { Resolve-ContainedPath -Path (Join-Path $scratch 'nope') } | Should -Throw
@@ -103,7 +106,7 @@ InModuleScope GIMTools {
             New-Item -ItemType Directory -Path $outside -Force | Out-Null
             try {
                 $link = Join-Path $scratch 'link'
-                New-Item -ItemType Junction -Path $link -Target $outside | Out-Null
+                New-GimTestReparsePoint -Path $link -Target $outside | Out-Null
                 { Resolve-ContainedPath -Path $link } | Should -Throw
             } finally {
                 Remove-Item -LiteralPath $outside -Recurse -Force -ErrorAction SilentlyContinue
@@ -112,7 +115,7 @@ InModuleScope GIMTools {
         It 'resolves a junction to a contained target and returns the target real path' {
             $target = Join-Path $scratch 'sub'
             $link = Join-Path $scratch 'link-in'
-            New-Item -ItemType Junction -Path $link -Target $target | Out-Null
+            New-GimTestReparsePoint -Path $link -Target $target | Out-Null
             $resolved = Resolve-ContainedPath -Path $link
             $resolved | Should -Be ([System.IO.Path]::GetFullPath($target))
         }
@@ -138,7 +141,7 @@ InModuleScope GIMTools {
             try {
                 [System.IO.File]::WriteAllText((Join-Path $outside 'leak.txt'), 'x', (New-Object System.Text.UTF8Encoding($false)))
                 $link = Join-Path $scratch 'jlink'
-                New-Item -ItemType Junction -Path $link -Target $outside | Out-Null
+                New-GimTestReparsePoint -Path $link -Target $outside | Out-Null
                 [System.IO.File]::WriteAllText((Join-Path $scratch 'real.txt'), 'x', (New-Object System.Text.UTF8Encoding($false)))
                 $hits = @(Get-GimGlobMatches -Glob (".agent-scratch/$scratchName/*.txt") -Roots @($repoRoot) -DepthFilter 0)
                 $hits.Count | Should -Be 1
