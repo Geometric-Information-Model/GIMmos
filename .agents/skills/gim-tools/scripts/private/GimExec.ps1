@@ -66,7 +66,7 @@ function Get-GimRunAuditPath {
         }
         return $p
     }
-    return Join-Path $env:LOCALAPPDATA 'gim\run-audit.log'
+    return Join-Path (Get-GimLocalDataRoot) 'gim\run-audit.log'
 }
 
 function Add-GimRunAudit {

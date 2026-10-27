@@ -95,7 +95,7 @@ Describe 'gim-inspect' {
         $out[0] | Should -Match 'hash=[0-9a-f]{64}'
     }
     It 'rejects a path outside the roots' {
-        { gim-inspect 'C:\Windows' } | Should -Throw
+        { gim-inspect (Get-GimTestOutsidePath) } | Should -Throw
     }
     It 'emits a JSON envelope with --json' {
         $env = gim-inspect $text --bytes --json | ConvertFrom-Json
@@ -294,7 +294,7 @@ Describe 'gim-diff' {
             # raw text, no envelope) so the test does not depend on variables
             # crossing into the module scope.
             $env:LOCALAPPDATA = $tmpStore
-            $sanitized = ($repoRoot -replace '\\', '_' -replace ':', '')
+            $sanitized = ($repoRoot -replace '[\\/]', '_' -replace ':', '')
             $storeDir = Join-Path (Join-Path $tmpStore 'gim\vars') $sanitized
             New-Item -ItemType Directory -Path $storeDir -Force | Out-Null
             [System.IO.File]::WriteAllText((Join-Path $storeDir 'diffright.val'), "$rightB`n$rightC`n", $enc)
@@ -318,7 +318,7 @@ Describe 'gim-diff' {
         $tmpStore = Join-Path ([System.IO.Path]::GetTempPath()) ('gim-store-' + [guid]::NewGuid().ToString('N'))
         try {
             $env:LOCALAPPDATA = $tmpStore
-            $sanitized = ($repoRoot -replace '\\', '_' -replace ':', '')
+            $sanitized = ($repoRoot -replace '[\\/]', '_' -replace ':', '')
             $storeDir = Join-Path (Join-Path $tmpStore 'gim\vars') $sanitized
             New-Item -ItemType Directory -Path $storeDir -Force | Out-Null
             [System.IO.File]::WriteAllText((Join-Path $storeDir 'diffright.val'), "${rightB}: kind=file hash=xyz`n${rightC}: kind=file hash=xyz`n", $enc)

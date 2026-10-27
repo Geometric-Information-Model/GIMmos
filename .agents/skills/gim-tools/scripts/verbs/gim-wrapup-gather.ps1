@@ -312,7 +312,7 @@ function gim-wrapup-gather {
             if ([System.IO.Path]::IsPathRooted($outArg)) { $outPath = $outArg }
             else { $outPath = Join-Path $repoRoot $outArg }
         } else {
-            $outPath = Join-Path $repoRoot ('.agent-scratch\wrapup\' + $slug + '\gather.json')
+            $outPath = Join-Path $repoRoot (Join-Path '.agent-scratch' (Join-Path 'wrapup' (Join-Path $slug 'gather.json')))
         }
         try {
             $outPath = Resolve-GimWritePath -Path $outPath -Roots @($repoRoot) -RootLabel ("repo '{0}'" -f $repoName)
@@ -324,7 +324,7 @@ function gim-wrapup-gather {
         $tempLogsDir = Join-Path $gatherDir ('.gather-logs-' + [guid]::NewGuid().ToString('N'))
         $helperPath = [string]$env:GIM_WRAPUP_GATHER_HELPER
         if ($helperPath -eq '') {
-            $helperPath = Join-Path $script:GimModuleRoot 'helpers\gim-wrapup-gather.mjs'
+            $helperPath = Join-Path $script:GimModuleRoot (Join-Path 'helpers' 'gim-wrapup-gather.mjs')
         }
         if (-not (Test-Path -LiteralPath $helperPath -PathType Leaf)) {
             Write-GimWrapupGatherFailure -Message ("gim-wrapup-gather helper not found: '{0}'; required input: restore the Node helper" -f $helperPath) -JsonMode $jsonMode
@@ -409,7 +409,7 @@ function gim-wrapup-gather {
                     return
                 }
             }
-            Publish-GimWrapupGatherLogs -TempDir $tempLogsDir -FinalDir (Join-Path $gatherDir 'logs') -MarkerPath (Join-Path $gatherDir 'logs\.gim-wrapup-gather.logs')
+            Publish-GimWrapupGatherLogs -TempDir $tempLogsDir -FinalDir (Join-Path $gatherDir 'logs') -MarkerPath (Join-Path (Join-Path $gatherDir 'logs') '.gim-wrapup-gather.logs')
             $writeArtifact = {
                 param($Path, $Text)
                 $parent = [System.IO.Path]::GetDirectoryName($Path)

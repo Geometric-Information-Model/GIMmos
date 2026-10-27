@@ -4,30 +4,33 @@
 
 function Convert-GimGlobToRegex {
     param([string]$Glob)
-    # Canonical globs may use forward slashes (e.g. "docs/adr/*.md"); normalize
-    # to backslash before building the regex so Windows real paths match.
-    # '**' crosses separators; a trailing '**\' (zero or more directory
-    # segments) is optional so 'sub/**/*.cs' also matches 'sub\a.cs'.
-    $normalized = $Glob -replace '/', '\'
+    # Canonical globs may use either separator. The match is against the
+    # platform FullName, so one regex accepts '\' and '/'.
+    # '**' crosses separators; a trailing '**/' (zero or more directory
+    # segments) is optional so 'sub/**/*.cs' also matches 'sub/a.cs'.
+    $normalized = $Glob -replace '\\', '/'
     $sb = New-Object System.Text.StringBuilder
     $i = 0
     while ($i -lt $normalized.Length) {
         $ch = $normalized[$i]
         if ($ch -eq '*') {
             if (($i + 1) -lt $normalized.Length -and $normalized[$i + 1] -eq '*') {
-                if (($i + 2) -lt $normalized.Length -and $normalized[$i + 2] -eq '\') {
-                    [void]$sb.Append('(?:.*\\)?')
+                if (($i + 2) -lt $normalized.Length -and $normalized[$i + 2] -eq '/') {
+                    [void]$sb.Append('(?:.*[/\\])?')
                     $i += 3
                 } else {
                     [void]$sb.Append('.*')
                     $i += 2
                 }
             } else {
-                [void]$sb.Append('[^\\]*')
+                [void]$sb.Append('[^/\\]*')
                 $i++
             }
         } elseif ($ch -eq '?') {
-            [void]$sb.Append('[^\\]')
+            [void]$sb.Append('[^/\\]')
+            $i++
+        } elseif ($ch -eq '/') {
+            [void]$sb.Append('[/\\]')
             $i++
         } else {
             [void]$sb.Append([System.Text.RegularExpressions.Regex]::Escape([string]$ch))
@@ -40,11 +43,11 @@ function Convert-GimGlobToRegex {
 function Get-GimGlobAnchor {
     # Longest non-wildcard directory prefix of a glob, used to bound recursion.
     param([string]$Glob)
-    $normalized = $Glob -replace '/', '\'
+    $normalized = $Glob -replace '\\', '/'
     $idx = $normalized.IndexOfAny([char[]]@('*', '?'))
     if ($idx -lt 0) { return $normalized }
     $before = $normalized.Substring(0, $idx)
-    $lastSep = $before.LastIndexOf('\')
+    $lastSep = $before.LastIndexOf('/')
     if ($lastSep -lt 0) { return '' }
     return $before.Substring(0, $lastSep)
 }
@@ -61,7 +64,7 @@ function Get-GimGlobMatches {
     $rx = New-Object System.Text.RegularExpressions.Regex $regex
     $anchor = Get-GimGlobAnchor -Glob $Glob
     $anchorRel = ''
-    if ($anchor -ne '') { $anchorRel = $anchor.Trim('\') }
+    if ($anchor -ne '') { $anchorRel = $anchor.Trim([char[]]@('\', '/')) }
     $hits = New-Object System.Collections.Generic.List[string]
     foreach ($root in $Roots) {
         if (-not (Test-Path -LiteralPath $root)) { continue }
@@ -70,17 +73,19 @@ function Get-GimGlobMatches {
         if (-not (Test-Path -LiteralPath $start)) { continue }
         $items = Get-ChildItem -LiteralPath $start -Recurse -Force -ErrorAction SilentlyContinue
         foreach ($item in $items) {
-            $rel = $item.FullName.Substring($root.Length).TrimStart('\')
+            $rel = $item.FullName.Substring($root.Length).TrimStart([char[]]@('\', '/'))
             if ($rx.IsMatch($rel)) {
                 if ($DepthFilter -gt 0) {
                     $depthRel = $rel
                     if ($anchorRel -ne '') {
-                        $prefix = $anchorRel + '\'
-                        if ($depthRel.StartsWith($prefix, [System.StringComparison]::OrdinalIgnoreCase)) {
-                            $depthRel = $depthRel.Substring($prefix.Length)
+                        foreach ($prefix in @(($anchorRel + '\'), ($anchorRel + '/'))) {
+                            if ($depthRel.StartsWith($prefix, [System.StringComparison]::OrdinalIgnoreCase)) {
+                                $depthRel = $depthRel.Substring($prefix.Length)
+                                break
+                            }
                         }
                     }
-                    if (@($depthRel -split '\\').Count -gt $DepthFilter) { continue }
+                    if (@(Split-GimPathSegments -Relative $depthRel).Count -gt $DepthFilter) { continue }
                 }
                 $real = Get-GimRealPath -Path $item.FullName
                 if (-not (Test-GimContainedPath -RealPath $real -RootRealPaths $Roots)) { continue }
@@ -98,7 +103,7 @@ function Get-GimListUnder {
         return @(Get-ChildItem -LiteralPath $Dir -Force -ErrorAction SilentlyContinue)
     }
     $all = @(Get-ChildItem -LiteralPath $Dir -Recurse -Force -ErrorAction SilentlyContinue)
-    return @($all | Where-Object { @($_.FullName.Substring($Dir.Length).TrimStart('\') -split '\\').Count -le $Depth })
+    return @($all | Where-Object { @(Split-GimPathSegments -Relative ($_.FullName.Substring($Dir.Length).TrimStart([char[]]@('\', '/')))).Count -le $Depth })
 }
 
 function gim-list {

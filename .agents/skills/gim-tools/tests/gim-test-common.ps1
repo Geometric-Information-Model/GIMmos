@@ -15,3 +15,49 @@ function global:Get-GimTestRepoRoot {
     # dot-sources it live in the same tests directory.
     return Split-Path -Parent (Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $PSScriptRoot)))
 }
+
+function global:New-GimTestReparsePoint {
+    # Junction on Windows, symlink elsewhere. Both are reparse points that
+    # Get-GimRealPath follows.
+    param(
+        [Parameter(Mandatory = $true)][string]$Path,
+        [Parameter(Mandatory = $true)][string]$Target
+    )
+    if ([System.IO.Path]::DirectorySeparatorChar -eq [char]'/') {
+        New-Item -ItemType SymbolicLink -Path $Path -Target $Target | Out-Null
+        return
+    }
+    New-Item -ItemType Junction -Path $Path -Target $Target | Out-Null
+}
+
+function global:Get-GimTestOutsidePath {
+    # A rooted path outside the repo. On Windows this stays under C:\Windows
+    # so existing assertions keep the same path. On Unix, C:\... is not rooted
+    # and would land inside the working directory.
+    param([string]$Child = '')
+    if ([System.IO.Path]::DirectorySeparatorChar -eq '\') {
+        if ([string]::IsNullOrEmpty($Child)) { return 'C:\Windows' }
+        return (Join-Path 'C:\Windows' $Child)
+    }
+    $root = [System.IO.Path]::GetTempPath().TrimEnd([char[]]@('\', '/'))
+    if ([string]::IsNullOrEmpty($Child)) { return $root }
+    return (Join-Path $root $Child)
+}
+
+function global:Get-GimTestNonTempOutsidePath {
+    # Outside the repo and outside the OS temp root. gim-apply admits the
+    # temp root, so C:\Windows (Windows) or /var/lib (Unix) is the reject path.
+    param([string]$Child = 'gim-forbidden')
+    if ([System.IO.Path]::DirectorySeparatorChar -eq '\') {
+        return (Join-Path 'C:\Windows' $Child)
+    }
+    return (Join-Path '/var/lib' $Child)
+}
+
+function global:Get-GimTestParentEscape {
+    # '..\..\..\leaf' on Windows and '../../../leaf' on Unix, so GetFullPath
+    # actually leaves the repo on both.
+    param([string]$Leaf = 'Windows')
+    $sep = [System.IO.Path]::DirectorySeparatorChar
+    return ('..' + $sep + '..' + $sep + '..' + $sep + $Leaf)
+}

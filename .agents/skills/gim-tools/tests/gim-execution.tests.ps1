@@ -110,7 +110,7 @@ Describe 'gim-run confinement' {
     It 'rejects a ..\ escape project' {
         Push-Location (Get-GimTestRepoRoot)
         try {
-            { gim-run build --project '..\..\..\Windows\System32' --dry-run } | Should -Throw -ExpectedMessage '*not contained*'
+            { gim-run build --project (Get-GimTestParentEscape -Leaf ('Windows' + [System.IO.Path]::DirectorySeparatorChar + 'System32')) --dry-run } | Should -Throw -ExpectedMessage '*not contained*'
         } finally {
             Pop-Location
         }
@@ -119,7 +119,7 @@ Describe 'gim-run confinement' {
         { gim-run build --project '%TEMP%\evil.csproj' --dry-run } | Should -Throw -ExpectedMessage '*environment variables*'
     }
     It 'rejects an absolute project outside the repo' {
-        { gim-run build --project 'C:\Windows\notepad.exe' --dry-run } | Should -Throw -ExpectedMessage '*not contained*'
+        { gim-run build --project (Get-GimTestOutsidePath 'notepad.exe') --dry-run } | Should -Throw -ExpectedMessage '*not contained*'
     }
     It 'rejects a project escaping through a junction' {
         $repoRoot = Get-GimTestRepoRoot
@@ -129,7 +129,7 @@ Describe 'gim-run confinement' {
         New-Item -ItemType Directory -Path $scratch -Force | Out-Null
         try {
             $link = Join-Path $scratch 'jlink'
-            New-Item -ItemType Junction -Path $link -Target $outside | Out-Null
+            New-GimTestReparsePoint -Path $link -Target $outside | Out-Null
             { gim-run build --project (Join-Path $link 'x.csproj') --dry-run } | Should -Throw -ExpectedMessage '*not contained*'
         } finally {
             Remove-Item -LiteralPath $scratch -Recurse -Force -ErrorAction SilentlyContinue
@@ -304,10 +304,10 @@ Describe 'gim-probe argv dry-run' {
         { gim-probe --project TestPlatform/TestPlatform.csproj --route / --method FOO --dry-run } | Should -Throw -ExpectedMessage '*invalid --method*'
     }
     It 'rejects a --body-file outside the repo' {
-        { gim-probe --project TestPlatform/TestPlatform.csproj --route / --body-file 'C:\Windows\notepad.exe' --dry-run } | Should -Throw -ExpectedMessage '*not contained*'
+        { gim-probe --project TestPlatform/TestPlatform.csproj --route / --body-file (Get-GimTestOutsidePath 'notepad.exe') --dry-run } | Should -Throw -ExpectedMessage '*not contained*'
     }
     It 'rejects a project escaping the repo' {
-        { gim-probe --project '..\..\..\Windows\System32' --route / --dry-run } | Should -Throw -ExpectedMessage '*not contained*'
+        { gim-probe --project (Get-GimTestParentEscape -Leaf ('Windows' + [System.IO.Path]::DirectorySeparatorChar + 'System32')) --route / --dry-run } | Should -Throw -ExpectedMessage '*not contained*'
     }
     It 'validates --timeout range' {
         { gim-probe --project TestPlatform/TestPlatform.csproj --route / --timeout 1801 --dry-run } | Should -Throw -ExpectedMessage '*cap*'

@@ -207,7 +207,10 @@ function ConvertTo-GimPrRepoRelativeFile {
     if ($normalized -match '(^|/)\.\.(/|$)') {
         Write-GimError ("invalid file list entry '{0}': the path escapes the repository; required input: a repo-relative path" -f $trim)
     }
-    $full = [System.IO.Path]::GetFullPath((Join-Path $RepoRoot ($normalized -replace '/', '\')))
+    # Keep the repo-relative form. Join-Path accepts '/' on Windows and Linux.
+    # Rewriting '/' to '\' makes .NET GetFullPath treat the child as one
+    # filename on Linux, where '\' is not a separator.
+    $full = [System.IO.Path]::GetFullPath((Join-Path $RepoRoot $normalized))
     $real = Get-GimRealPath -Path $full
     $rootReal = Get-GimRealPath -Path $RepoRoot
     if (-not (Test-GimContainedPath -RealPath $real -RootRealPaths @($rootReal))) {
@@ -218,8 +221,24 @@ function ConvertTo-GimPrRepoRelativeFile {
     }
     # A missing path is allowed on purpose: it goes to `git add`, whose exact
     # error is reported, and it is the only way to commit a tracked deletion.
-    $rootPrefix = $rootReal.TrimEnd('\') + '\'
-    return ($real.Substring($rootPrefix.Length) -replace '\\', '/')
+    return (Get-GimRepoRelativePath -RootReal $rootReal -RealPath $real)
+}
+
+function Get-GimRepoRelativePath {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$RootReal,
+        [Parameter(Mandatory = $true)]
+        [string]$RealPath
+    )
+    $rootTrim = $RootReal.TrimEnd([char[]]@('\', '/'))
+    foreach ($sep in @('\', '/')) {
+        $prefix = $rootTrim + $sep
+        if ($RealPath.StartsWith($prefix, [System.StringComparison]::OrdinalIgnoreCase)) {
+            return ($RealPath.Substring($prefix.Length) -replace '\\', '/')
+        }
+    }
+    Write-GimError ("resolved path '{0}' is not under repository root '{1}'" -f $RealPath, $RootReal)
 }
 
 function ConvertTo-GimPrFileList {
@@ -337,8 +356,8 @@ function Get-GimPrResultDirectory {
         if ($sanitized -eq '') { $sanitized = 'unknown' }
         $rel = $sanitized
     }
-    $dir = $rel -replace '/', '\'
-    return [System.IO.Path]::GetFullPath((Join-Path $RepoRoot ('.agent-scratch\pr-files\' + $dir)))
+    $dir = $rel -replace '\\', '/'
+    return [System.IO.Path]::GetFullPath((Join-Path $RepoRoot ('.agent-scratch/pr-files/' + $dir)))
 }
 
 function Get-GimPrDerivedFilesFile {
@@ -355,8 +374,8 @@ function Get-GimPrDerivedFilesFile {
         [string]$Branch
     )
     $rel = Get-GimPrFilesRelativeDirectory -Branch $Branch
-    $dir = $rel -replace '/', '\'
-    return [System.IO.Path]::GetFullPath((Join-Path $RepoRoot ('.agent-scratch\pr-files\' + $dir + '\files.txt')))
+    $dir = $rel -replace '\\', '/'
+    return [System.IO.Path]::GetFullPath((Join-Path $RepoRoot ('.agent-scratch/pr-files/' + $dir + '/files.txt')))
 }
 
 function Get-GimPrIndexFiles {

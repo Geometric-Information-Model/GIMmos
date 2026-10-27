@@ -246,14 +246,14 @@ function Get-GimPreflightDocsIndexes {
     $localFiles = @{}
     $remoteFiles = @{}
     $remoteError = $null
-    $rootTrim = $Root.TrimEnd('\')
+    $rootTrim = $Root.TrimEnd([char[]]@('\', '/'))
     foreach ($family in $script:GimFleetDocFamilies) {
         $rel = New-Object System.Collections.Generic.List[string]
-        $dir = Join-Path $Root ($family.path -replace '/', '\')
+        $dir = Join-Path $Root ($family.path -replace '\\', '/')
         if (Test-Path -LiteralPath $dir -PathType Container) {
             foreach ($file in [System.IO.Directory]::GetFiles($dir, '*', [System.IO.SearchOption]::TopDirectoryOnly)) {
                 if ($file.Length -le $rootTrim.Length) { continue }
-                $relPath = $file.Substring($rootTrim.Length).TrimStart('\') -replace '\\', '/'
+                $relPath = $file.Substring($rootTrim.Length).TrimStart([char[]]@('\', '/')) -replace '\\', '/'
                 [void]$rel.Add($relPath)
             }
         }

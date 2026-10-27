@@ -123,7 +123,7 @@ Describe 'gim-verbs --gen-refs' {
         ($bytes.Length -ge 3 -and $bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF) | Should -Be $false
     }
     It 'rejects an output dir outside the write roots' {
-        { gim-verbs --gen-refs --out-dir 'C:\Windows\Temp\gim-refs' } | Should -Throw
+        { gim-verbs --gen-refs --out-dir (Get-GimTestOutsidePath 'Temp\gim-refs') } | Should -Throw
     }
 }
 

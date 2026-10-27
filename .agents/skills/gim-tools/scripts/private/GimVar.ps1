@@ -13,9 +13,10 @@
 # TTL is derived from the filename, age from the file's last-write time, so a
 # single temp+rename write is fully atomic (no val/meta pair to tear).
 #
-# Store root: %LOCALAPPDATA%\gim\vars\<sanitized-repo-root> where the repo
-# root is encoded with '\' -> '_' and the drive colon stripped (e.g.
-# D:\Work\GIM\GIMtransfer -> D__Work_GIM_GIMtransfer). GIM_VARS_ROOT env var
+# Store root: %LOCALAPPDATA%\gim\vars\<sanitized-repo-root> where '\' and '/'
+# become '_' and the drive colon is stripped (e.g.
+# D:\Work\GIM\GIMtransfer -> D_Work_GIM_GIMtransfer). On Linux, LOCALAPPDATA
+# falls back to XDG_DATA_HOME or ~/.local/share. GIM_VARS_ROOT env var
 # overrides the root (must be a rooted local path; tests point it at a temp
 # dir); -StoreRoot param wins over both.
 #
@@ -30,9 +31,9 @@ $script:GimVarMaxNamespaceBytes = 10485760 # 10 MiB per namespace dir
 function Test-GimStoreRoot {
     <#
     .SYNOPSIS
-        Validate a store root: must be a rooted local path (drive letter).
-        Relative, UNC, and env-var-containing values are rejected so the
-        store never silently relocates.
+        Validate a store root: a rooted local path. Windows requires a drive
+        letter. Unix requires a '/' absolute path. Relative paths, UNC paths,
+        and unexpanded environment variables are rejected.
     #>
     param(
         [Parameter(Mandatory = $true)]
@@ -41,15 +42,34 @@ function Test-GimStoreRoot {
     if ($Root -match '%[^%]+%') {
         Write-GimError "invalid store root '$Root': environment variables are not expanded (give the full path)"
     }
+    if ($Root -match '^[\\/]{2}') {
+        Write-GimError "invalid store root '$Root': must be a rooted local path, not UNC"
+    }
     if (-not [System.IO.Path]::IsPathRooted($Root)) {
         Write-GimError "invalid store root '$Root': must be an absolute path"
     }
     $full = [System.IO.Path]::GetFullPath($Root)
+    if ($full -match '^[\\/]{2}') {
+        Write-GimError "invalid store root '$Root': must be a rooted local path, not UNC"
+    }
     $pathRoot = [System.IO.Path]::GetPathRoot($full)
+    if ([System.IO.Path]::DirectorySeparatorChar -eq [char]'/') {
+        if ($pathRoot -ne '/') {
+            Write-GimError "invalid store root '$Root': must be a rooted local path, not UNC"
+        }
+        return $full
+    }
     if ($null -eq $pathRoot -or $pathRoot.Length -ne 3 -or $pathRoot[1] -ne ':') {
         Write-GimError "invalid store root '$Root': must be a rooted local path (drive letter), not UNC"
     }
     return $full
+}
+
+function Get-GimLocalDataRoot {
+    if (-not [string]::IsNullOrWhiteSpace($env:LOCALAPPDATA)) { return $env:LOCALAPPDATA }
+    if (-not [string]::IsNullOrWhiteSpace($env:XDG_DATA_HOME)) { return $env:XDG_DATA_HOME }
+    if (-not [string]::IsNullOrWhiteSpace($HOME)) { return (Join-Path $HOME '.local/share') }
+    Write-GimError 'LOCALAPPDATA is not set and no home directory is available for the variable store'
 }
 
 function Get-GimVarStoreRoot {
@@ -69,8 +89,8 @@ function Get-GimVarStoreRoot {
     if ($Root) { return (Test-GimStoreRoot -Root $Root) }
     if ($env:GIM_VARS_ROOT) { return (Test-GimStoreRoot -Root $env:GIM_VARS_ROOT) }
     $repo = Get-GimRepoRoot
-    $sanitized = ($repo -replace '\\', '_' -replace ':', '')
-    return Join-Path (Join-Path $env:LOCALAPPDATA 'gim\vars') $sanitized
+    $sanitized = ($repo -replace '[\\/]', '_' -replace ':', '')
+    return Join-Path (Join-Path (Get-GimLocalDataRoot) 'gim\vars') $sanitized
 }
 
 function Test-GimVarName {

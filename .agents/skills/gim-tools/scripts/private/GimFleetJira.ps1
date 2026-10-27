@@ -11,7 +11,7 @@ function Get-GimFleetJiraConfigPath {
     .SYNOPSIS
         Path to the D0-generated Jira config.
     #>
-    return (Join-Path $script:GimModuleRoot 'fleet\jira-config.json')
+    return (Join-Path $script:GimModuleRoot (Join-Path 'fleet' 'jira-config.json'))
 }
 
 function Get-GimFleetJiraCreateTemplatePath {
@@ -19,7 +19,7 @@ function Get-GimFleetJiraCreateTemplatePath {
     .SYNOPSIS
         Path to the observed acli create payload template.
     #>
-    return (Join-Path $script:GimModuleRoot 'fleet\jira-create.template.json')
+    return (Join-Path $script:GimModuleRoot (Join-Path 'fleet' 'jira-create.template.json'))
 }
 
 function Get-GimFleetJiraProperty {

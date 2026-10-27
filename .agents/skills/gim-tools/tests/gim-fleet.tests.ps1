@@ -423,21 +423,21 @@ Describe 'gim-pr path derivation' {
         It 'derives the scratch files.txt path' {
             $root = Get-GimTestRepoRoot
             $path = Get-GimPrDerivedFilesFile -RepoRoot $root -Branch 'gim-fleet-scripts/c3-gim-pr'
-            $path | Should -Match '\.agent-scratch\\pr-files\\gim-fleet-scripts\\c3-gim-pr\\files\.txt$'
+            $path | Should -Match '\.agent-scratch[/\\]pr-files[/\\]gim-fleet-scripts[/\\]c3-gim-pr[/\\]files\.txt$'
         }
         It 'derives the result directory without error for a mapped branch' {
             $root = Get-GimTestRepoRoot
             (Get-GimPrResultDirectory -RepoRoot $root -Branch 'gim-fleet-scripts/c3-gim-pr') |
-                Should -Match '\.agent-scratch\\pr-files\\gim-fleet-scripts\\c3-gim-pr$'
+                Should -Match '\.agent-scratch[/\\]pr-files[/\\]gim-fleet-scripts[/\\]c3-gim-pr$'
             (Get-GimPrResultDirectory -RepoRoot $root -Branch 'feature/c3-gim-pr') |
-                Should -Match '\.agent-scratch\\pr-files\\c3-gim-pr\\feature$'
+                Should -Match '\.agent-scratch[/\\]pr-files[/\\]c3-gim-pr[/\\]feature$'
         }
         It 'sanitizes an invalid branch shape instead of throwing' {
             $root = Get-GimTestRepoRoot
             (Get-GimPrResultDirectory -RepoRoot $root -Branch 'feature/a/b') |
-                Should -Match '\.agent-scratch\\pr-files\\feature-a-b$'
+                Should -Match '\.agent-scratch[/\\]pr-files[/\\]feature-a-b$'
             (Get-GimPrResultDirectory -RepoRoot $root -Branch '') |
-                Should -Match '\.agent-scratch\\pr-files\\unknown$'
+                Should -Match '\.agent-scratch[/\\]pr-files[/\\]unknown$'
         }
     }
 }
@@ -452,7 +452,7 @@ Describe 'gim-pr file list parsing' {
             New-Item -ItemType Directory -Path (Join-Path $scratch 'folder') -Force | Out-Null
             [System.IO.File]::WriteAllText((Join-Path $scratch 'a.txt'), 'a', (New-Object System.Text.UTF8Encoding($false)))
             [System.IO.File]::WriteAllText((Join-Path $scratch 'sub\b.txt'), 'b', (New-Object System.Text.UTF8Encoding($false)))
-            $rootPrefix = $repoReal.TrimEnd('\') + '\'
+            $rootPrefix = $repoReal.TrimEnd([char[]]@('\', '/')) + [System.IO.Path]::DirectorySeparatorChar
             $script:relA = ((Join-Path $scratch 'a.txt').Substring($rootPrefix.Length) -replace '\\', '/')
             $script:relB = ((Join-Path $scratch 'sub\b.txt').Substring($rootPrefix.Length) -replace '\\', '/')
             $script:relDir = ((Join-Path $scratch 'folder').Substring($rootPrefix.Length) -replace '\\', '/')
@@ -2130,7 +2130,8 @@ process.stdout.write(JSON.stringify({document:doc,documentJson:JSON.stringify(do
         }
         It 'rejects mixed modes and an out-path escape before spawning a helper' {
             { gim-wrapup-gather --repo GIMmos --chain 1 --pr 40 } | Should -Throw '*exactly one of --chain, --pr, or --branch*'
-            { gim-wrapup-gather --repo GIMmos --pr 40 --out ..\gim-wrapup-escape.json } | Should -Throw "*write path not contained in repo 'GIMmos'*"
+            $repoLeaf = Split-Path -Leaf (Resolve-GimFleetRepo -Requested 'GIMmos')
+            { gim-wrapup-gather --repo GIMmos --pr 40 --out ..\gim-wrapup-escape.json } | Should -Throw "*write path not contained in repo '$repoLeaf'*"
         }
     }
 }
@@ -2743,7 +2744,7 @@ Describe 'gim-wrapup-respond' {
             { gim-wrapup-respond --harness x --file responses.json } | Should -Throw '*missing --repo*'
             { gim-wrapup-respond --repo GIMmos --harness x } | Should -Throw '*missing --file*'
             { gim-wrapup-respond --repo GIMmos --file responses.json } | Should -Throw '*missing --harness*'
-            { gim-wrapup-respond --repo GIMmos --file 'C:\Windows\responses.json' --harness x } | Should -Throw '*outside the configured roots*roots.json*'
+            { gim-wrapup-respond --repo GIMmos --file (Get-GimTestOutsidePath 'responses.json') --harness x } | Should -Throw '*outside the configured roots*roots.json*'
         }
         It 'emits a JSON argument-error envelope' {
             $modulePath = Join-Path $script:GimModuleRoot 'GIMTools\GIMTools.psd1'

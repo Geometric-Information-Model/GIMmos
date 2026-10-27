@@ -18,7 +18,7 @@ function Get-GimJiraTransitionConfigPath {
     .SYNOPSIS
         Path to the D0-generated transition config.
     #>
-    return (Join-Path $script:GimModuleRoot 'fleet\jira-transitions.json')
+    return (Join-Path $script:GimModuleRoot (Join-Path 'fleet' 'jira-transitions.json'))
 }
 
 function Get-GimJiraTransitionConfig {
