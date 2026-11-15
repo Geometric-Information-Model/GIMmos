@@ -17,7 +17,7 @@ Fleet workflow only. Two changes: pin the seven Cursor Task subagents to one mod
 - **Human doc.** An ADR, an RFC, a guide, or README or index prose written for a person. Apply the writing rule when one of these is created or edited. Do not edit an existing human doc only to apply the rule.
 - **Not a human doc.** A plan, a skill, an agent prompt, code, chat, and a caveman report. Plans stay fat. They hold the detail an agent needs to execute the work.
 - **Skill.** New model-invoked skill `.agents/skills/gim-simple-english/SKILL.md`. Do not set `disable-model-invocation`. Do not add it to `.agents/agent-preload.json`. The description is the trigger. The skill holds the grammar rules and nothing else.
-- **Process home.** `gim-orchestrate` non-negotiable 2 is the only place that states when to read the skill, when to run unslop, how thin an ADR is, and how `## Considered Options` looks. Both orchestrator agent files add one pointer sentence. They do not copy the rules.
+- **Process home.** The human-doc rule is written in full in `gim-orchestrate` non-negotiable 2 and in both orchestrator agent files. Neither file points at the other for that rule. The 14 grammar rules stay in `gim-simple-english` only.
 - **Unslop.** After a human-doc draft follows `gim-simple-english`, run unslop `rewrite` with the `crisp` preset. Do not edit `.agents/skills/unslop/`.
 - **Considered Options.** The heading stays `## Considered Options`. It stays optional. Each rejected option is one bullet: a bold title, one or two sentences only when the title is unclear, then why it was refused. The chosen decision stays in the opening.
 - **Out of scope.** Do not edit `.agents/skills/domain-modeling/` (third-party). Do not edit `.agents/skills/agentic-planning/` (it governs plan shape only). Do not edit `.cursor/hooks/`, `.cursor/hooks.json`, or any OpenCode plugin. Do not port `gim-preload.ps1`. The user withdrew the hook port. Do not write an ADR. The rule is easy to edit, so it fails the "hard to reverse" test. Do not create a Jira ticket. Search returned no hit, and this is `.agents` / `.cursor` meta.
@@ -55,7 +55,7 @@ PR titles:
 - Agent changes the Cursor orchestrator model, or any OpenCode model line.
 - Agent edits `domain-modeling`, `agentic-planning`, `unslop`, hooks, or hook config.
 - Agent writes an ADR, creates a Jira ticket, or preloads `gim-simple-english` in `.agents/agent-preload.json`.
-- Agent copies the grammar rules into the orchestrator agent files instead of pointing at `gim-orchestrate`.
+- Agent makes one orchestrator file point at the other for the human-doc rule, or copies the 14 grammar rules out of `gim-simple-english`.
 - Agent edits a sibling repo.
 
 ## Branch and preconditions
@@ -93,14 +93,14 @@ Status: completed.
 
 ### Step 3 — add gim-simple-english and point the orchestrator at it [critic, verify, commit, PR]
 
-Status: pending.
+Status: completed.
 
 - **Files / symbols**:
   - Create `.agents/skills/gim-simple-english/SKILL.md`.
   - Edit `.agents/skills/gim-orchestrate/SKILL.md` non-negotiable 2, and add one sentence to product-loop step 4.
   - Edit `.cursor/agents/gim-orchestrator.md` non-negotiable 2, and add one sentence to the product-loop mirror step 4.
   - Edit `.opencode/agents/gim-orchestrator.md` the same way. Do not change its `model:` line.
-- **Change**: Write the skill below as the file contents. Then add the process sentence to the three protocol files. Do not copy the grammar list into those files.
+- **Change**: Write the skill below as the file contents. Write the human-doc rule in full in all three protocol files. Do not point one of those files at another. Do not copy the grammar list into those files.
 - **Why**: The grammar list is long, so it lives in a skill the description can trigger. The orchestrator is the writer, so the duty to use the skill lives on non-negotiable 2. One source of truth for the process. One source of truth for the grammar.
 - **Skill file contents**:
 
@@ -162,24 +162,20 @@ Every rule above holds for the human doc you are writing. A procedure sentence h
 ~~~
 
 - **Orchestrator skill, product-loop step 4.** After the existing step 4 sentence, add: `Write each human doc per non-negotiable 2.`
-- **Both agent files, non-negotiable 2.** Replace:
+- **Both agent files, non-negotiable 2.** Replace the short item 2 with the same human-doc rule as the skill, in that file's own words. Do not point at `gim-orchestrate`. The text in each agent file is:
 
-  `2. **You write** plans/ADRs/RFCs/top-level docs (not builder).`
-
-  with:
-
-  `2. **You write** plans/ADRs/RFCs/top-level docs (not builder). When you write or edit a human doc, follow the human-doc rule in `.agents/skills/gim-orchestrate/SKILL.md` (non-negotiable 2).`
+  `2. **You write** plans/ADRs/RFCs/top-level docs (not builder). A human doc is an ADR, an RFC, a guide, or README or index prose for a person. When you write or edit a human doc, read and follow `gim-simple-english`, then run unslop `rewrite` with the `crisp` preset. Keep the ADR thin. Keep the plan fat for the agent who will execute it. `## Considered Options` is optional. Each rejected option is one bullet: a bold title, one or two sentences only when the title is unclear, then why you refused it. The chosen decision stays in the opening. Do not edit an existing human doc only to apply this rule. A plan, a skill, a prompt, code, chat, and a caveman report are not human docs.`
 
 - **Both agent files, product-loop mirror step 4.** After the existing step 4 sentence, add: `Write each human doc per non-negotiable 2.`
 - **Validate**:
   - The skill name is `gim-simple-english`. The description matches the block above. `disable-model-invocation` is absent.
   - `gim-orchestrate` non-negotiable 2 names `gim-simple-english`, unslop `rewrite`, the `crisp` preset, thin ADRs, fat plans, and `## Considered Options`.
-  - Both agent files point at that rule and do not list the 14 grammar rules.
+  - Both agent files state the human-doc rule in full and do not point at `gim-orchestrate` for it. They do not list the 14 grammar rules.
   - `.opencode/agents/gim-orchestrator.md` still has `model: deepseek/deepseek-flash`.
   - `.cursor/agents/gim-orchestrator.md` still has `model: grok-4.7[context=256k,reasoning_effort=high,fast=false]`.
   - `domain-modeling`, `agentic-planning`, `unslop`, and `.cursor/hooks/` have no edits.
   - `.agents/agent-preload.json` has no new entry.
-- **PR**: after verify, gim-version-controller runs `gim-pr`. Evidence files: `.agent-scratch/pr-files/simple-english/3-simple-english-skill/files.txt` and `body.md`. The body includes this `Trigger:` line: `We'll call the skill gim-simple-english` and `these should go to agentic planning OR orchestration skill and agent`, resolved to the orchestration skill and both orchestrator agents. Vocabulary rule: `use simple english words and prefer them over complex synonyms`, tightened to the common-word rule in the skill. Message: `3: gim-improve(gim-simple-english): add the skill and orchestrator pointers`. Title: `[Docs] Simple English - add the simple English skill`. Target: `simple-english/2-cursor-model-pins`. `--new-branch simple-english/3-simple-english-skill`. The step 3 files must still be uncommitted when `gim-pr` starts.
+- **PR**: after verify, gim-version-controller runs `gim-pr`. Evidence files: `.agent-scratch/pr-files/simple-english/3-simple-english-skill/files.txt` and `body.md`. The body includes this `Trigger:` line: `We'll call the skill gim-simple-english` and `these should go to agentic planning OR orchestration skill and agent`, resolved to the orchestration skill and both orchestrator agents. Vocabulary rule: `use simple english words and prefer them over complex synonyms`, tightened to the common-word rule in the skill. Message: `3: gim-improve(gim-simple-english): add the skill and the human-doc rule`. Title: `[Docs] Simple English - add the simple English skill`. Target: `simple-english/2-cursor-model-pins`. `--new-branch simple-english/3-simple-english-skill`. The step 3 files must still be uncommitted when `gim-pr` starts.
 
 ## Review
 

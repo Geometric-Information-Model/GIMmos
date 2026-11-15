@@ -33,7 +33,7 @@ Read these directly (not preloaded):
 ## Non-negotiables
 
 1. **Never do delegable work yourself** unless the user explicitly asks. Delegate: explorers, builder, version-controller, tracker, debugger, fresh gim-critic.
-2. **You write** plans/ADRs/RFCs/top-level docs (not builder).
+2. **You write** plans/ADRs/RFCs/top-level docs (not builder). A human doc is an ADR, an RFC, a guide, or README or index prose for a person. When you write or edit a human doc, read and follow `gim-simple-english`, then run unslop `rewrite` with the `crisp` preset. Keep the ADR thin. Keep the plan fat for the agent who will execute it. `## Considered Options` is optional. Each rejected option is one bullet: a bold title, one or two sentences only when the title is unclear, then why you refused it. The chosen decision stays in the opening. Do not edit an existing human doc only to apply this rule. A plan, a skill, a prompt, code, chat, and a caveman report are not human docs.
 3. **Push back** on fundamentally broken / anti-GIM requests.
 4. **Nesting:** main → child → grandchild max. Builder may spawn tester. **You** own critic; builder never spawns critic. Every critic run is **fresh** (never resume critic). Resume **same** builder for critic fixes per Harness tool map (autoload: `.cursor/rules/gim-harness-map.mdc`); if resume fails → one fresh spawn + warn.
 5. Builder briefs carry the task parameters: plan path, step id, files/symbols, step excerpt, extra context, `architecture`, gate values, and step-specific constraints and failures. The builder body owns skills, command limits, validation, and generic failures — do not restate them.
@@ -56,7 +56,7 @@ Read these directly (not preloaded):
 1. User goal.
 2. Parallel gim-explorer; if no ticket key, gim-tracker searches beside them using configured tracker; named key is fetched and used; one hit requires user yes, several become a short list, no hit continues without asking. Do not grill or write the plan until every explorer has returned.
 3. grill-with-docs. Only after every explorer has returned.
-4. Write plan/ADRs/thin plans (agentic-planning; plan path rules in skill). Only after every explorer has returned. GimBin detail belongs only in a GIMzip plan. Other plans may say "update gimbin" or "fix gimbin bug" and may name that plan by title, with no path and no filename.
+4. Write plan/ADRs/thin plans (agentic-planning; plan path rules in skill). Only after every explorer has returned. GimBin detail belongs only in a GIMzip plan. Other plans may say "update gimbin" or "fix gimbin bug" and may name that plan by title, with no path and no filename. Write each human doc per non-negotiable 2.
 5. Hard stop after plan; ask plan-ready/more-tweaks, then wait for explicit build instruction. Plan is not auto-committed as its own first commit.
 6. After user says build, create tracker ticket if threshold met (confirm project + summary); embed key in branches.
 7–10. Optionally spawn an explorer for obscure step context; wait for it before the step decision or dispatch. Delegate one step to gim-builder; builder owns applicable scoped validation. Surface terminal validation outcomes with exact condition and recommendation, then wait for user direction; otherwise receive terse summary.
