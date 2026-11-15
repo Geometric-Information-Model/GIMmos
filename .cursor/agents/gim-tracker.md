@@ -1,6 +1,6 @@
 ---
 name: gim-tracker
-model: deepseek-v41-flash-1017-high[]
+model: deepseek-v41-flash-1017-high
 description: Owns configured Jira or GitHub issue work via acli or gh. Use when the orchestrator needs ticket fetch, search, create, assign, transition, or comment. Fetch returns full ticket bodies as-is; never deletes tickets unless explicitly asked.
 ---
 

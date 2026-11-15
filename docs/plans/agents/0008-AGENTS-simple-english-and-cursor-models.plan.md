@@ -4,7 +4,7 @@ Fleet workflow only. Two changes: pin the seven Cursor Task subagents to one mod
 
 ## Decisions
 
-- **Cursor models.** These seven files change their `model:` line to `deepseek-v41-flash-1017-high[]`:
+- **Cursor models.** These seven files change their `model:` line to `deepseek-v41-flash-1017-high`:
   - `.cursor/agents/gim-builder.md` (now `gemini-3.8-flash[]`)
   - `.cursor/agents/gim-explorer.md` (now `gemini-3.8-flash[]`)
   - `.cursor/agents/gim-tester.md` (now `gemini-3.8-flash[]`)
@@ -84,9 +84,9 @@ Status: completed.
 Status: completed.
 
 - **Files / symbols**: the seven `.cursor/agents/gim-*.md` files listed under Decisions. Change only the `model:` frontmatter line.
-- **Change**: Set each of the seven lines to `model: deepseek-v41-flash-1017-high[]`. Do not change any other line in those files. Do not change `.cursor/agents/gim-orchestrator.md`. Do not change any file under `.opencode/agents/`.
+- **Change**: Set each of the seven lines to `model: deepseek-v41-flash-1017-high`. Do not change any other line in those files. Do not change `.cursor/agents/gim-orchestrator.md`. Do not change any file under `.opencode/agents/`.
 - **Why**: The user asked for Cursor subagents only. The orchestrator stays on grok. OpenCode already has its own model pin.
-- **Validate**: Read the `model:` line of all eight Cursor agent files and all eight OpenCode agent files. The seven Task agents show `deepseek-v41-flash-1017-high[]`. The Cursor orchestrator still shows `grok-4.7[context=256k,reasoning_effort=high,fast=false]`. Every OpenCode agent still shows `deepseek/deepseek-flash`.
+- **Validate**: Read the `model:` line of all eight Cursor agent files and all eight OpenCode agent files. The seven Task agents show `deepseek-v41-flash-1017-high`. The Cursor orchestrator still shows `grok-4.7[context=256k,reasoning_effort=high,fast=false]`. Every OpenCode agent still shows `deepseek/deepseek-flash`.
 - **Commit message**: `2: gim-improve(cursor-agents): pin Task subagents to deepseek-v41-flash`
 - **Trigger**: `all of the subagents, but not the orchestrator` and `update the models of the subagents (in cursor only) to use deepseek-v41-flash-1017-high`.
 - **PR**: after verify, gim-version-controller runs `gim-pr`. Evidence files: `.agent-scratch/pr-files/simple-english/2-cursor-model-pins/files.txt` and `body.md`. The body contains the `Trigger:` line. Message: the commit message above. Title: `[Docs] Simple English - pin Cursor Task subagents to deepseek flash`. Target: `chore/simple-english`. `--new-branch simple-english/2-cursor-model-pins`. The seven model files must still be uncommitted when `gim-pr` starts.

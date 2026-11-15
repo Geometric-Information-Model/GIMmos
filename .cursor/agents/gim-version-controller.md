@@ -1,6 +1,6 @@
 ---
 name: gim-version-controller
-model: deepseek-v41-flash-1017-high[]
+model: deepseek-v41-flash-1017-high
 description: Subagent that owns git and GitHub CLI mutations under a destructive deny-list. Use when the orchestrator needs status/fetch/branch/commit/push/PR create-edit-comment, review-comment fetch, PR check fetch, or a gim-wrapup reply-and-resolve. Refuses deny-listed commands without explicit user consent.
 ---
 

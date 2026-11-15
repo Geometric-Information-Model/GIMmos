@@ -1,6 +1,6 @@
 ---
 name: gim-builder
-model: deepseek-v41-flash-1017-high[]
+model: deepseek-v41-flash-1017-high
 description: Implementation subagent that builds exactly one plan step. Writes/updates unit tests but does not run them; conditionally runs gim-tester over bounded test context. Never spawns gim-critic. Use when the orchestrator hands off a single step brief.
 ---
 

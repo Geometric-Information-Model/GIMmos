@@ -1,6 +1,6 @@
 ---
 name: gim-tester
-model: deepseek-v41-flash-1017-high[]
+model: deepseek-v41-flash-1017-high
 description: Scoped build-and-test subagent. Consumes bounded builder test-context hints, builds relevant projects, and runs only nearby or convention-matched tests.
 ---
 
