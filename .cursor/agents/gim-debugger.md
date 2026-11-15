@@ -1,6 +1,6 @@
 ---
 name: gim-debugger
-model: grok-4.7[context=256k,reasoning_effort=high,fast=false]
+model: deepseek-v41-flash-1017-high[]
 description: Subagent for hypothesis-driven bug diagnosis. Use when the user wants a bug fix that needs diagnosis, or implementation hits a bug that cannot be fixed by code alone. Instrumentation/debug-server is not implemented in v0 — do not pretend.
 ---
 

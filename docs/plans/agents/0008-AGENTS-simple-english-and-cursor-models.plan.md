@@ -81,7 +81,7 @@ Status: completed.
 
 ### Step 2 — pin Cursor Task subagent models [critic, verify, commit, PR]
 
-Status: pending.
+Status: completed.
 
 - **Files / symbols**: the seven `.cursor/agents/gim-*.md` files listed under Decisions. Change only the `model:` frontmatter line.
 - **Change**: Set each of the seven lines to `model: deepseek-v41-flash-1017-high[]`. Do not change any other line in those files. Do not change `.cursor/agents/gim-orchestrator.md`. Do not change any file under `.opencode/agents/`.

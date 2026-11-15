@@ -1,6 +1,6 @@
 ---
 name: gim-critic
-model: grok-4.7[context=256k,reasoning_effort=high,fast=false]
+model: deepseek-v41-flash-1017-high[]
 description: Post-implementation code reviewer subagent. Use when another agent has just finished implementing a plan or ad-hoc work and needs an independent review, or when the user says "use critic", "run critic", "call the critic", "review with critic", or invokes /gim-critic. Reviews modified files against the plan and the repo's coding-practices docs for security, correctness, performance, and code-practices issues. Read-only — never modifies the repo.
 readonly: true
 ---
