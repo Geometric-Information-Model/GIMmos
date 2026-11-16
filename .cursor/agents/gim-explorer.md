@@ -1,6 +1,6 @@
 ---
 name: gim-explorer
-model: gemini-3.8-flash[]
+model: deepseek-v41-flash-1017-high
 description: Readonly research subagent for the GIM workspace. Use when the orchestrator or parent needs codebase or web findings without implementation. Searches with CodeGraph, semble, ast-grep, and Grep via workspace-code-search; returns terse bullet findings with file paths.
 readonly: true
 is_background: true
